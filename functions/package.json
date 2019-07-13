@@ -13,9 +13,16 @@
     "node": "8"
   },
   "dependencies": {
+    "express": "^4.17.1",
     "firebase-admin": "^8.0.0",
     "firebase-functions": "^3.1.0",
-    "nuxt-start": "^2.8.1"
+    "nuxt": "^2.8.1",
+    "nuxt-start": "^2.8.1",
+    "@nuxtjs/axios": "^5.3.6",
+    "cross-env": "^5.2.0",
+    "firebase": "^6.3.0",
+    "nuxt-buefy": "^0.3.2",
+    "vue-p5": "^0.7.1"
   },
   "devDependencies": {
     "eslint": "^5.12.0",
