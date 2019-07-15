@@ -8,6 +8,9 @@
 import Race from '@/components/Race'
 
 export default {
-  name: 'RacePage'
+  name: 'RacePage',
+  components: {
+    Race
+  }
 }
 </script>

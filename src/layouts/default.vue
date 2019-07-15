@@ -7,15 +7,15 @@
       aria-label="main navigation"
     >
       <div class="navbar-brand">
-        <a
+        <n-link
           class="navbar-item"
-          href="/"
+          to="/"
         >
           <img
             src="~assets/arithmerace_logo.png"
             alt="Arithmerace"
           >
-        </a>
+        </n-link>
 
         <div class="navbar-burger">
           <span />

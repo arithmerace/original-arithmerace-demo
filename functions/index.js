@@ -1,33 +1,11 @@
-// const functions = require('firebase-functions')
-// const { Nuxt } = require('nuxt-start')
-
-// const app = require('express')()
-// const isProd = true
-
-// // We instantiate Nuxt.js with the options
-// const nconfig = require('./nuxt.config.js')
-// const config = {
-//   buildDir: 'nuxt',
-//   dev: !isProd,
-//   debug: !isProd
-// }
-
-// const nuxt = new Nuxt(config)
-
-// // Render every route with Nuxt.js
-// app.use(nuxt.render)
-
-// // // Build only in dev mode with hot-reloading
-// // if (config.dev) {
-// //   new Builder(nuxt).build()
-// //   .then(listen)
-// // }
-
-// exports.ssrapp = functions.https.onRequest(app)
-
 const functions = require('firebase-functions')
+const admin = require('firebase-admin')
 const express = require('express')
 const { Nuxt } = require('nuxt-start')
+
+admin.initializeApp();
+
+const isProd = functions.config().env.prod
 
 const app = express()
 
