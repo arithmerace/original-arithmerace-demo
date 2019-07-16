@@ -20,7 +20,7 @@
     "firebase": "^6.3.0",
     "nuxt": "^2.0.0",
     "nuxt-buefy": "^0.3.2",
-    "vue-p5": "^0.7.1"
+    "pixi.js": "^5.0.4"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^0.0.1",

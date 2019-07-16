@@ -19,15 +19,12 @@
           <b-input v-model="form.password" required type="password" minlength="8" placeholder="Choose a password" />
         </b-field>
         <b-button native-type="submit" type="is-primary" @click="signup">Sign Up</b-button>
-        <b-button type="is-light" @click="writeTest">Write Test</b-button>
       </form>
     </div>
   </section>
 </template>
 
 <script>
-import { fireDb } from '~/plugins/firebase.js'
-
 export default {
   name: 'SignUp',
   data() {
@@ -41,18 +38,6 @@ export default {
   },
   methods: {
     signup() {
-    },
-    async writeTest() {
-      const ref = fireDb.collection('test').doc('test')
-      const document = {
-        text: 'This is a test message.'
-      }
-      try {
-        await ref.set(document)
-      } catch (e) {
-        // TODO: error handling
-        // console.error(e)
-      }
     }
   }
 }

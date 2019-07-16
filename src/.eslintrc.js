@@ -13,6 +13,8 @@ module.exports = {
   ],
   // add your custom rules here
   rules: {
+    'no-console': 'off',
+    'no-trailing-spaces': 'off',
     'nuxt/no-cjs-in-config': 'off'
   }
 }

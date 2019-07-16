@@ -57,7 +57,7 @@ export default {
     return {
       menu_items: [
         { name: 'Race', to: '/race' },
-        { name: 'Store', to: '/store' },
+        { name: 'Shop', to: '/store' },
         { name: 'Inventory', to: '/inventory' }
       ]
     }

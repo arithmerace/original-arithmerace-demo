@@ -1,5 +1,7 @@
 import firebase from 'firebase/app'
+import 'firebase/auth'
 import 'firebase/firestore'
+import 'firebase/functions'
 
 if (!firebase.apps.length) {
   const config = {
@@ -12,8 +14,10 @@ if (!firebase.apps.length) {
     appId: '1:230702699520:web:fbd1dae01c6e784e'
   }
   firebase.initializeApp(config)
-  firebase.firestore().settings({ timestampsInSnapshots: true })
+  // firebase.firestore().settings({ timestampsInSnapshots: true })
 }
 
-const fireDb = firebase.firestore()
-export { fireDb }
+const fireStore = firebase.firestore()
+const fireAuth = firebase.auth()
+const fireFuncs = firebase.functions()
+export { fireStore, fireAuth, fireFuncs }

@@ -1,9 +1,11 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
-const express = require('express')
-const { Nuxt } = require('nuxt-start')
 
 admin.initializeApp();
+
+/* START Server-Side Renderer */
+const express = require('express')
+const { Nuxt } = require('nuxt-start')
 
 const isProd = functions.config().env.prod
 
@@ -27,3 +29,9 @@ function handleRequest(req, res) {
 
 app.get('*', handleRequest)
 exports.ssrapp = functions.https.onRequest(app)
+/* END SSR */
+
+/* CALLABLE API */
+const api = require('api/index.js')
+
+exports.findRace = functions.https.onCall(api.findRace)
