@@ -1,4 +1,6 @@
 const functions = require('firebase-functions')
+const cfg = require('config.json')
 
-exports.findRace = (data) => {
+exports.convertWRtoGame = (doc, ctx) => {
+  
 }

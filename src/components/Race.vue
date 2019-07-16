@@ -1,7 +1,6 @@
 <template>
   <div id="canvas-container">
-    <b-button @click="initGame">Init Game</b-button>
-    <canvas width="640" height="480" ref="raceCanvas" />
+    <canvas width="700" height="500" ref="raceCanvas" />
   </div>
 </template>
 
@@ -18,27 +17,25 @@ export default {
     }
   },
   methods: {
-    initGame() {
-      console.log(this.$refs)
-      this.app = new PIXI.Application({ width: 640, height: 480, view: this.$refs.raceCanvas, backgroundColor: 0xa3a5a8 })
-      
-      const rect = new PIXI.Graphics()
-      rect.beginFill(0x66CCFF)
-      rect.drawRect(100, 100, 100, 100)
-      rect.endFill()
-      this.app.stage.addChild(rect)
-    }
   },
-  created() {
+  mounted() {
+    fireAuth.signInAnonymously().then((user) => {
+      user.updateProfile({
+        displayName: 'testuser123'
+      })
+    }).catch((err) => {
+      console.error(err.message)
+    })
+    
+    this.app = new PIXI.Application({ width: 700, height: 500, view: this.$refs.raceCanvas, backgroundColor: 0xa3a5a8 })
     
   }
-    
 }
 </script>
 
 <style scoped>
 #canvas-container {
     margin: auto;
-    width: 640px;
+    width: 700px;
 }
 </style>

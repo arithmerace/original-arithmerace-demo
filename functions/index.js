@@ -31,7 +31,9 @@ app.get('*', handleRequest)
 exports.ssrapp = functions.https.onRequest(app)
 /* END SSR */
 
-/* CALLABLE API */
+/* CALLABLE API AND FIRESTORE WATCH */
 const api = require('api/index.js')
 
-exports.findRace = functions.https.onCall(api.findRace)
+exports.convertWaitingRoomToGame = functions.firestore
+  .document('waitingroom/{user}')
+  .onCreate(api.convertWRtoGame)

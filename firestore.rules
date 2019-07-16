@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /waitingroom/{user} {
+      allow create, delete if request.auth.uid == user;
+    }
+  }
+}

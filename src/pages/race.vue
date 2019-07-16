@@ -5,12 +5,10 @@
 </template>
 
 <script>
-import Race from '@/components/Race'
+import Race from '~/components/Race'
 
 export default {
   name: 'RacePage',
-  components: {
-    Race
-  }
+  components: { Race }
 }
 </script>
