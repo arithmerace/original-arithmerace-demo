@@ -6,6 +6,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { fireAuth } from '~/plugins/firebase'
 
 export default {
   name: 'Race',
@@ -13,22 +14,28 @@ export default {
   },
   data() {
     return {
-      app: null
+      app: null,
+      user: null
     }
   },
-  methods: {
-  },
   mounted() {
-    fireAuth.signInAnonymously().then((user) => {
-      user.updateProfile({
-        displayName: 'testuser123'
-      })
-    }).catch((err) => {
-      console.error(err.message)
-    })
-    
-    this.app = new PIXI.Application({ width: 700, height: 500, view: this.$refs.raceCanvas, backgroundColor: 0xa3a5a8 })
-    
+    // Sign In if needed, then init game
+    this.user = fireAuth().currentUser
+    if (this.user == null) {
+      fireAuth().signInAnonymously()
+        .then((user) => {
+          this.user = user
+          this.initGame()
+        })
+        .catch((err) => {
+          this.$disp_error(err, this)
+        })
+    } else this.initGame()
+  },
+  methods: {
+    initGame() {
+      this.app = new PIXI.Application({ width: 700, height: 500, view: this.$refs.raceCanvas, backgroundColor: 0xa3a5a8 })
+    }
   }
 }
 </script>

@@ -28,7 +28,8 @@ module.exports = {
   ** Plugins to load before mounting the App
   */
   plugins: [
-    '~/plugins/firebase.js'
+    '~/plugins/firebase.js',
+    '~/plugins/error_inject.client.js'
   ],
   /*
   ** Nuxt.js modules

@@ -18,7 +18,7 @@ export default {
   },
   methods: {
     guestLogin() {
-      fireAuth.signInAnonymously().then((user) => {
+      fireAuth().signInAnonymously().then((user) => {
         user.updateProfile({
           displayName: 'testuser123'
         })

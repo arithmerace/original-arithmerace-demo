@@ -7,7 +7,8 @@ service cloud.firestore {
     }
     
     match /waitingroom/{user} {
-      allow create, delete if request.auth.uid == user;
+      allow read: if request.auth.id != null;
+      allow create, delete: if request.auth.uid == user;
     }
   }
 }
