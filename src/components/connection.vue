@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { fireRtdb, fireAuth } from '~/plugins/firebase'
+import { fireDb, fireAuth } from '~/plugins/firebase'
 
 export default {
   name: 'Connection',
@@ -18,27 +18,27 @@ export default {
     fireAuth().onAuthStateChanged((user) => {
       if (user) {
         // Manage presence - https://firebase.google.com/docs/firestore/solutions/presence
-        fireRtdb().ref('.info/connected').on('value', (snap) => {
+        fireDb().ref('.info/connected').on('value', (snap) => {
           if (snap.val() === true) this.wasConnected = true
           else if (this.wasConnected) {
             this.$snackbar.open({
               indefinite: true,
-              message: 'Uh oh! You were disconnected. Please reload the page.',
+              message: 'Uh oh! You were disconnected. Please reload the page and try again.',
               type: 'is-danger'
             })
             return
           }
           
-          const ustatusDBref = fireRtdb().ref('/ustatus/' + user.uid)
+          const ustatusDBref = fireDb().ref('/ustatus/' + user.uid)
       
           ustatusDBref.onDisconnect().set({
             status: 'offline'
           }).then(() => {
             ustatusDBref.set({ status: 'online' }).catch((err) => {
-              this.$disp_error(err, this)
+              this.$disp_error('ustatusset:' + err, this)
             })
           }).catch((err) => {
-            this.$disp_error(err, this)
+            this.$disp_error('ustatusset:' + err, this)
           })
         })
       }

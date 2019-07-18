@@ -6,7 +6,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { fireAuth } from '~/plugins/firebase'
+import { fireAuth, fireDb } from '~/plugins/firebase'
 
 export default {
   name: 'Race',
@@ -15,7 +15,8 @@ export default {
   data() {
     return {
       app: null,
-      user: null
+      user: null,
+      waitingRoom: {}
     }
   },
   mounted() {
@@ -34,7 +35,30 @@ export default {
   },
   methods: {
     initGame() {
+      // Initialize Pixi window
       this.app = new PIXI.Application({ width: 700, height: 500, view: this.$refs.raceCanvas, backgroundColor: 0xa3a5a8 })
+      
+      // Add user to waiting room
+      fireDb().ref('waitingroom/' + this.user.uid).set({
+        waiting: true
+      }).catch((err) => { this.$disp_error('waitingroom:' + err, this) })
+      
+      // Update waiting room data
+      fireDb().ref('waitingroom').on('value', (snap) => {
+        this.updateWaitingRoom(snap.val())
+      })
+      
+      fireDb().ref('user/' + this.user.uid).on('value', (snap) => {
+        if (snap.val().assignedRace !== null) {
+          this.startRace(snap.val().assignedRace)
+        }
+      })
+    },
+    startRace(race) {
+      alert('The game is starting!!!')
+    },
+    updateWaitingRoom(room) {
+      
     }
   }
 }

@@ -1,6 +1,6 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
-import 'firebase/firestore'
+// import 'firebase/firestore'
 import 'firebase/functions'
 import 'firebase/database'
 
@@ -18,8 +18,8 @@ if (!firebase.apps.length) {
   // firebase.firestore().settings({ timestampsInSnapshots: true })
 }
 
-const fireStore = firebase.firestore
-const fireRtdb = firebase.database
+// const fireStore = firebase.firestore
+const fireDb = firebase.database
 const fireAuth = firebase.auth
 const fireFuncs = firebase.functions
-export { fireStore, fireAuth, fireFuncs, fireRtdb }
+export { fireAuth, fireFuncs, fireDb }
