@@ -1,6 +1,30 @@
 {
   "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null"
+    "ustatus": {
+      "$uid": {
+        ".write": "$uid === auth.uid",
+        ".read": "auth.uid !== null",
+        ".validate": "newData.child('status').val() === 'online' || newData.child('status').val() === 'offline'"
+      }
+    },
+    "waitingroom": {
+      ".read": "auth.uid !== null",
+      "$uid": {
+        ".write": "auth.uid === $uid",
+        ".validate": "!newData.exists() || newData.child('waiting').val() === true"
+      }
+    },
+    "user": {
+      "$uid": {
+        ".write": false,
+        ".read": "auth.uid === $uid"
+      }
+    },
+    "race": {
+      "$raceid": {
+        ".write": false,
+        ".read": "root.child(auth.uid).child('assignedRace').val() === $raceid"
+      }
+    }
   }
 }

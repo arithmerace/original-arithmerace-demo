@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import * as PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js-legacy'
 import { fireAuth, fireDb } from '~/plugins/firebase'
 
 export default {
@@ -16,7 +16,9 @@ export default {
     return {
       app: null,
       user: null,
-      waitingRoom: {}
+      game: {
+        waitingRoomText: new PIXI.Text('Heading to waiting room...')
+      }
     }
   },
   mounted() {
@@ -36,29 +38,34 @@ export default {
   methods: {
     initGame() {
       // Initialize Pixi window
-      this.app = new PIXI.Application({ width: 700, height: 500, view: this.$refs.raceCanvas, backgroundColor: 0xa3a5a8 })
+      this.app = new PIXI.Application({ width: 700, height: 500, view: this.$refs.raceCanvas, backgroundColor: 0xa1a1a1, forceCanvas: true })
+      this.app.stage.addChild(this.game.waitingRoomText)
       
       // Add user to waiting room
-      fireDb().ref('waitingroom/' + this.user.uid).set({
+      const waitingRoomRef = fireDb().ref('waitingroom/' + this.user.uid)
+      
+      waitingRoomRef.set({
         waiting: true
-      }).catch((err) => { this.$disp_error('waitingroom:' + err, this) })
+      }).catch((err) => { this.$disp_error('waitingroomset:' + err, this) })
+      waitingRoomRef.onDisconnect().remove()
       
       // Update waiting room data
       fireDb().ref('waitingroom').on('value', (snap) => {
+        console.log('hey?')
         this.updateWaitingRoom(snap.val())
       })
       
-      fireDb().ref('user/' + this.user.uid).on('value', (snap) => {
-        if (snap.val().assignedRace !== null) {
+      fireDb().ref('user/' + this.user.uid + '/assignedRace').on('value', (snap) => {
+        if (snap.val() != null) {
           this.startRace(snap.val().assignedRace)
         }
       })
     },
     startRace(race) {
-      alert('The game is starting!!!')
+      
     },
     updateWaitingRoom(room) {
-      
+      this.game.waitingRoomText.text = Object.keys(room).length.toString() + ' player(s) in waiting room'
     }
   }
 }
