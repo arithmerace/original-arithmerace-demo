@@ -16,15 +16,21 @@
     },
     "user": {
       "$uid": {
-        ".write": false,
         ".read": "auth.uid === $uid"
       }
     },
     "race": {
       "$raceid": {
-        ".write": false,
         ".read": "root.child(auth.uid).child('assignedRace').val() === $raceid"
+        "player": {
+          "$playerid": {
+            ".write": false
+          }
+        }
       }
+    },
+    "_race": {
+      ".read": false
     }
   }
 }

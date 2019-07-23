@@ -1,6 +1,10 @@
 <template>
-  <div id="canvas-container">
-    <canvas width="700" height="500" ref="raceCanvas" />
+  <div id="game">
+    <div id="canvas-div">
+      <canvas width="700" height="450" ref="raceCanvas" />
+    </div>
+    <div id="ui">
+    </div>
   </div>
 </template>
 
@@ -16,6 +20,7 @@ export default {
     return {
       app: null,
       user: null,
+      waitingRoomRef: null,
       game: {
         waitingRoomText: new PIXI.Text('Heading to waiting room...')
       }
@@ -38,7 +43,7 @@ export default {
   methods: {
     initGame() {
       // Initialize Pixi window
-      this.app = new PIXI.Application({ width: 700, height: 500, view: this.$refs.raceCanvas, backgroundColor: 0xa1a1a1, forceCanvas: true })
+      this.app = new PIXI.Application({ width: 700, height: 450, view: this.$refs.raceCanvas, backgroundColor: 0xa1a1a1, forceCanvas: true })
       this.app.stage.addChild(this.game.waitingRoomText)
       
       // Add user to waiting room
@@ -50,19 +55,21 @@ export default {
       waitingRoomRef.onDisconnect().remove()
       
       // Update waiting room data
-      fireDb().ref('waitingroom').on('value', (snap) => {
+      const WRref = fireDb().ref('waitingroom')
+      WRref.on('value', (snap) => {
         console.log('hey?')
         this.updateWaitingRoom(snap.val())
       })
       
       fireDb().ref('user/' + this.user.uid + '/assignedRace').on('value', (snap) => {
         if (snap.val() != null) {
-          this.startRace(snap.val().assignedRace)
+          WRref.off()
+          this.startRace(snap.val())
         }
       })
     },
     startRace(race) {
-      
+      this.$toast.open('Found a race')
     },
     updateWaitingRoom(room) {
       this.game.waitingRoomText.text = Object.keys(room).length.toString() + ' player(s) in waiting room'
@@ -72,8 +79,16 @@ export default {
 </script>
 
 <style scoped>
-#canvas-container {
-    margin: auto;
-    width: 700px;
+#game {
+  padding: 10px;
+  width: 720px;
+  margin: auto;
+  border: 1px solid gray;
+  border-radius: 4px;
+}
+#ui {
+  height: 100px;
+  background-color: green;
+  width: 700px;
 }
 </style>

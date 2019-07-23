@@ -1,6 +1,9 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 
+const api = require('./api/callable.js')
+const dbApi = require('./api/database.js')
+
 admin.initializeApp();
 
 /* START Server-Side Renderer */
@@ -31,9 +34,12 @@ app.get('*', handleRequest)
 exports.ssrapp = functions.https.onRequest(app)
 /* END SSR */
 
-/* CALLABLE API AND DB WATCH */
-const api = require('./api.js')
-
+/* DB WATCH */
 exports.convertWaitingRoomToGame = functions.database
   .ref('waitingroom/{user}')
-  .onCreate(api.convertWRtoGame)
+  .onCreate(dbApi.convertWRtoGame)
+/* END DB WATCH */
+  
+/* CALLABLE API */
+exports.submitProblemSolution = functions.https.onCall(api.submitProblemSolution)
+/* END CALLABLE API */
