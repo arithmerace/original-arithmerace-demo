@@ -20,7 +20,7 @@ export default {
     return {
       app: null,
       user: null,
-      waitingRoomRef: null,
+      raceRef: null,
       game: {
         waitingRoomText: new PIXI.Text('Heading to waiting room...')
       }
@@ -57,22 +57,30 @@ export default {
       // Update waiting room data
       const WRref = fireDb().ref('waitingroom')
       WRref.on('value', (snap) => {
-        console.log('hey?')
         this.updateWaitingRoom(snap.val())
       })
       
       fireDb().ref('user/' + this.user.uid + '/assignedRace').on('value', (snap) => {
         if (snap.val() != null) {
-          WRref.off()
-          this.startRace(snap.val())
+          this.raceRef = fireDb().ref('race/' + snap.val())
+          this.startRace()
         }
       })
     },
-    startRace(race) {
-      this.$toast.open('Found a race')
+    startRace() {
+      this.$toast.open('Race starting soon')
+      document.title = 'RACE STARTING SOON'
+      
+      this.raceRef.child('started').on('value', (snap) => {
+        if (snap.val()) {
+          document.title = 'Arithmerace - in race'
+          this.$toast.open('Race starting!')
+        }
+      })
     },
     updateWaitingRoom(room) {
-      this.game.waitingRoomText.text = Object.keys(room).length.toString() + ' player(s) in waiting room'
+      if (room !== null) this.game.waitingRoomText.text = Object.keys(room).length.toString() + ' player(s) in waiting room'
+      else this.game.waitingRoomText.text = 'Waiting room empty'
     }
   }
 }

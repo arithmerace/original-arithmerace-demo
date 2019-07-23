@@ -21,7 +21,7 @@
     },
     "race": {
       "$raceid": {
-        ".read": "root.child(auth.uid).child('assignedRace').val() === $raceid"
+        ".read": "auth.uid !== null",
         "player": {
           "$playerid": {
             ".write": false
