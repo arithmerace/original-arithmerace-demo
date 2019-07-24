@@ -22,14 +22,13 @@
         <div class="ui-label">{{ game.questionLabel }}</div>
         <div class="ui-value">{{ game.questionValue }}</div>
       </div>
-      <div class="column">
+      <div class="column" @keyup.enter="handleSolution">
         <div class="ui-label">Your solution</div>
           <b-field :type="game.solutionFieldType">
             <b-input
               placeholder="Enter a number"
               v-model="game.userSolution"
               type="number"
-              @keyup.enter="handleSolution"
               :disabled="game.solutionInputDisabled"
               ref="solutionInput"
             />
@@ -138,12 +137,39 @@ export default {
     },
     submitSolution: fireFuncs().httpsCallable('submitProblemSolution'),
     handleSolution() {
-      this.$refs.game.solutionInput.blur()
       this.game.solutionInputDisabled = true
       // Submit user's solution then process result:
-      this.submitSolution({ solution: this.game.userSolution }).then((result) => {
-        
-      }).catch(err => this.$disp_error('submitSolution:' + err.message))
+      this.submitSolution({
+        solution: this.game.userSolution,
+        raceId: this.raceRef.key
+      }).then((result) => {
+        if (result.data.correct) {
+          this.game.questionValue = result.data.nextProblem
+          this.game.solutionFieldType = 'is-success'
+          this.game.fuel += result.data.newFuel
+          setTimeout(() => {
+            this.game.userSolution = ''
+            this.game.solutionInputDisabled = false
+            this.$refs.solutionInput.focus()
+            this.game.solutionFieldType = null
+          }, 500)
+        } else {
+          // Solution was not correct, display "try again" messages and re-enable input
+          this.game.solutionFieldType = 'is-danger'
+          this.$toast.open({
+            type: 'is-danger',
+            message: 'Try again!',
+            duration: 1000,
+            position: 'is-bottom-right',
+            queue: false
+          })
+          setTimeout(() => {
+            this.game.solutionInputDisabled = false
+            this.$refs.solutionInput.focus()
+            this.game.solutionFieldType = null
+          }, 500)
+        }
+      }).catch(err => this.$disp_error('submitSolution:' + err.message, this))
     }
   }
 }
