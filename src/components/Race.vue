@@ -32,6 +32,9 @@
               :disabled="game.solutionInputDisabled"
               ref="solutionInput"
             />
+            <b-button :disabled="game.solutionInputDisabled" type="is-primary" @click="handleSolution">
+              <b-icon icon="arrow-right" />
+            </b-button>
           </b-field>
       </div>
       <div class="columns column">
@@ -62,15 +65,22 @@ export default {
       user: null,
       raceRef: null,
       game: {
-        fuel: 40,
+        fuel: 0,
         speed: 0,
         position: '-',
         questionValue: '',
         questionLabel: 'In waiting room',
         userSolution: '',
         solutionInputDisabled: true,
-        solutionFieldType: null
+        solutionFieldType: null,
+        playerSprites: [],
+        players: {}
       }
+    }
+  },
+  computed: {
+    gamefuel() {
+      return this.game.fuel
     }
   },
   mounted() {
@@ -118,7 +128,7 @@ export default {
       this.$toast.open('Race starting soon')
       document.title = 'RACE STARTING SOON'
       this.game.questionLabel = 'Problem:'
-      this.game.questionValue = '---'
+      this.game.questionValue = 'wait...'
       
       // firstProblem will appear when race is started. Start race:
       this.raceRef.child('firstProblem').on('value', (snap) => {
@@ -128,14 +138,30 @@ export default {
           this.game.questionValue = snap.val()
           this.game.solutionInputDisabled = false
           this.$refs.solutionInput.focus()
+          this.game.fuel = 20
+          
+          // Start game loop
+          this.app.ticker.add(delta => this.main(delta))
+          
+          // Start player update listener
+          this.raceRef.child('player').on('value', this.updatePlayers)
         }
       })
+    },
+    main(delta) {
+      
+    },
+    updatePlayers(snap) {
+      this.game.players = snap.val()
+      
+      this.game.fuel = snap.child(this.user.uid + '/fuel').val()
     },
     updateWaitingRoom(room) {
       if (room !== null) this.game.questionValue = Object.keys(room).length.toString() + ' player(s)'
       else this.game.questionValue = '0 players'
     },
     submitSolution: fireFuncs().httpsCallable('submitProblemSolution'),
+    submitFuelUpdate: fireFuncs().httpsCallable('submitFuelLevelUpdate'),
     handleSolution() {
       this.game.solutionInputDisabled = true
       // Submit user's solution then process result:
@@ -146,7 +172,6 @@ export default {
         if (result.data.correct) {
           this.game.questionValue = result.data.nextProblem
           this.game.solutionFieldType = 'is-success'
-          this.game.fuel += result.data.newFuel
           setTimeout(() => {
             this.game.userSolution = ''
             this.game.solutionInputDisabled = false
@@ -170,6 +195,14 @@ export default {
           }, 500)
         }
       }).catch(err => this.$disp_error('submitSolution:' + err.message, this))
+    }
+  },
+  watch: {
+    gamefuel() {
+      this.$toast.open('SUCCESSS WATCH')
+      if (this.game.fuel % 20 === 0) {
+        this.submitFuelUpdate({ raceId: this.raceRef.key }).catch(err => this.$disp_error('submitFuelUpdate:' + err.message, this))
+      }
     }
   }
 }
