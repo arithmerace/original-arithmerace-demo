@@ -1,4 +1,7 @@
 {
   "raceStartDelay": 10000,
-  "numProblemsPerRace": 5
+  "newFuel": 10,
+  "numProblemsPerRace": 12,
+  "fuelConsumedPerSecond": 3,
+  "startingFuel": 20
 }

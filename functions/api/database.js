@@ -14,6 +14,8 @@ exports.convertWRtoGame = (snap, ctx) => {
         // For each player in waiting room, add player data to race then remove player from waiting room
         raceRef.child('player/' + player.key).set({
           progress: 0,
+          fuel: cfg.startingFuel,
+          updateTimestamp: null,
           currentProblem: 0,
           lane
         })
@@ -38,7 +40,7 @@ exports.convertWRtoGame = (snap, ctx) => {
       // the '_race' ref is used for hidden race data
       admin.database().ref('_race/' + raceRef.key).child('problems').set(problems)
       setTimeout(() => {
-        raceRef.child('started').set(true)
+        raceRef.child('startTime').set(Date.now())
         raceRef.child('firstProblem').set(problems[0].question)
       }, cfg.raceStartDelay)
     }

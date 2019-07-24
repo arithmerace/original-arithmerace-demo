@@ -16,7 +16,10 @@
     },
     "user": {
       "$uid": {
-        ".read": "auth.uid === $uid"
+        ".read": true,
+        "hasRaced": {
+          ".write": "auth.uid === $uid"
+        }
       }
     },
     "race": {

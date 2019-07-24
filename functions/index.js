@@ -42,4 +42,5 @@ exports.convertWaitingRoomToGame = functions.database
   
 /* CALLABLE API */
 exports.submitProblemSolution = functions.https.onCall(api.submitProblemSolution)
+exports.submitFuelLevelUpdate = functions.https.onCall(api.submitFuelLevelUpdate)
 /* END CALLABLE API */
