@@ -64,8 +64,14 @@ export default {
       app: null,
       user: null,
       raceRef: null,
+      updateFuncInterval: null,
+      config: {
+        fuelConsumedPerSecond: 3,
+        fuelSpeedInterval: 20 // amount of fuel needed to get to next speed level
+      },
       game: {
         fuel: 0,
+        fuelTimestamp: 0,
         speed: 0,
         position: '-',
         questionValue: '',
@@ -79,8 +85,8 @@ export default {
     }
   },
   computed: {
-    gamefuel() {
-      return this.game.fuel
+    speedwatch() {
+      return this.game.speed
     }
   },
   mounted() {
@@ -96,6 +102,13 @@ export default {
           this.$disp_error(err, this)
         })
     } else this.joinWaitingRoom()
+  },
+  beforeDestroy() {
+    fireDb().ref('waitingroom/' + this.user.uid).remove().catch(err => this.$disp_error('removefromWR' + err, this))
+    
+    clearInterval(this.updateFuncInterval)
+    
+    this.app.destroy(false, true)
   },
   methods: {
     joinWaitingRoom() {
@@ -139,22 +152,51 @@ export default {
           this.game.solutionInputDisabled = false
           this.$refs.solutionInput.focus()
           this.game.fuel = 20
-          
-          // Start game loop
-          this.app.ticker.add(delta => this.main(delta))
-          
-          // Start player update listener
-          this.raceRef.child('player').on('value', this.updatePlayers)
+
+          // Update players then start player update listener
+          this.raceRef.child('player').once('value', (snap) => {
+            this.updatePlayers(snap)
+            
+            // Start graphics loop (60 fps)
+            this.app.ticker.add(delta => this.main(delta))
+            
+            // Start data update loop (20 fps)
+            this.updateFuncInterval = setInterval(this.update, 50)
+            
+            this.raceRef.child('player').on('value', this.updatePlayers)
+          })
         }
       })
     },
     main(delta) {
-      
+      console.log('hey')
+    },
+    update() {
+      // Calculate current fuel
+      for (const player of Object.values(this.game.players)) {
+        const timeSinceLastFuelUpdate = (Date.now() - this.game.fuelTimestamp) / 1000
+        
+        // Subtract (fuel consumption rate * seconds since last fuel value) from last fuel value, then round and clamp to 0-100
+        player.fuel.is = Math.max(Math.min(Math.round(player.fuel.was - timeSinceLastFuelUpdate * this.config.fuelConsumedPerSecond), 100), 0)
+        
+        // Calculate player's speed based on fuel
+        player.speed = Math.floor((player.fuel.is - 1) / this.config.fuelSpeedInterval) + 1
+      }
+      // Set this user's fuel and speed
+      this.game.fuel = this.game.players[this.user.uid].fuel.is
+      this.game.speed = this.game.players[this.user.uid].speed
     },
     updatePlayers(snap) {
-      this.game.players = snap.val()
-      
-      this.game.fuel = snap.child(this.user.uid + '/fuel').val()
+      for (const [playerid, player] of Object.entries(snap.val())) {
+        this.game.players[playerid] = {
+          fuel: {
+            was: player.fuel,
+            is: player.fuel
+          }
+        }
+        
+        this.game.fuelTimestamp = Date.now()
+      }
     },
     updateWaitingRoom(room) {
       if (room !== null) this.game.questionValue = Object.keys(room).length.toString() + ' player(s)'
@@ -169,6 +211,7 @@ export default {
         solution: this.game.userSolution,
         raceId: this.raceRef.key
       }).then((result) => {
+        this.submitFuelUpdate({ raceId: this.raceRef.key }).catch(err => this.$disp_error('submitFuelUpdate:' + err.message, this))
         if (result.data.correct) {
           this.game.questionValue = result.data.nextProblem
           this.game.solutionFieldType = 'is-success'
@@ -198,11 +241,9 @@ export default {
     }
   },
   watch: {
-    gamefuel() {
-      this.$toast.open('SUCCESSS WATCH')
-      if (this.game.fuel % 20 === 0) {
-        this.submitFuelUpdate({ raceId: this.raceRef.key }).catch(err => this.$disp_error('submitFuelUpdate:' + err.message, this))
-      }
+    speedwatch() {
+      // Request server update every time player's speed level changes, to ensure that clients are updated.
+      this.submitFuelUpdate({ raceId: this.raceRef.key }).catch(err => this.$disp_error('submitFuelUpdate:' + err.message, this))
     }
   }
 }

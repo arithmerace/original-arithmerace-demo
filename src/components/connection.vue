@@ -44,16 +44,18 @@ export default {
         })
       }
     })
-  },
-  watch: {
-    $route() {
-      if (this.$route.name === 'race') {
-        this.wasOnRacePage = true
-      } else if (this.wasOnRacePage) {
-        fireDb().ref('waitingroom/' + fireAuth().currentUser.uid).remove().catch(err => this.$disp_error('removefromWR' + err, this))
-        this.wasOnRacePage = false
-      }
-    }
   }
+  // ,
+  // watch: {
+  //   $route() {
+  //     if (this.$route.name === 'race') {
+  //       this.wasOnRacePage = true
+  //     } else if (this.wasOnRacePage) {
+  //       fireDb().ref('waitingroom/' + fireAuth().currentUser.uid).remove().catch(err => this.$disp_error('removefromWR' + err, this))
+        
+  //       this.wasOnRacePage = false
+  //     }
+  //   }
+  // }
 }
 </script>
