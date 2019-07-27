@@ -33,6 +33,10 @@ exports.convertWRtoGame = (snap, ctx) => {
         problem.op = ['+', '-', '/', '*'][Math.floor(Math.random()*4)]
         problem.n1 = Math.floor(Math.random()*12)
         problem.n2 = Math.floor(Math.random()*12)
+        if (problem.op === '/' && problem.n1 % problem.n2 !== 0) {
+          // For now, only allow division if there isn't a remainder
+          problem.op = '*' // do multiplication instead
+        }
         problem.question = `${problem.n1} ${problem.op} ${problem.n2}`
         problem.solution = eval(problem.question)
         problems[i] = problem
