@@ -1,7 +1,7 @@
 <template>
   <div id="game">
     <div id="canvas-div">
-      <canvas width="700" height="450" ref="raceCanvas" />
+      <canvas :width="config.canvasWidth" :height="config.canvasHeight" ref="raceCanvas" />
     </div>
     <div id="ui" class="columns">
       <div class="columns column">
@@ -53,6 +53,7 @@
 
 <script>
 import * as PIXI from 'pixi.js-legacy'
+// const PIXI = require('pixi.js-legacy')
 import { fireAuth, fireDb, fireFuncs } from '~/plugins/firebase'
 
 export default {
@@ -64,12 +65,16 @@ export default {
       app: null,
       user: null,
       raceRef: null,
-      updateFuncInterval: null,
       config: {
+        movementRate: 0.1,
         fuelConsumedPerSecond: 3,
-        fuelSpeedInterval: 20 // amount of fuel needed to get to next speed level
+        fuelSpeedInterval: 20, // amount of fuel needed to get to next speed level
+        canvasHeight: 450,
+        canvasWidth: 700,
+        forceCanvas: true
       },
       game: {
+        started: false,
         fuel: 0,
         fuelTimestamp: 0,
         speed: 0,
@@ -79,7 +84,6 @@ export default {
         userSolution: '',
         solutionInputDisabled: true,
         solutionFieldType: null,
-        playerSprites: [],
         players: {}
       }
     }
@@ -90,37 +94,42 @@ export default {
     }
   },
   mounted() {
-    // Sign In if needed, then init game
-    this.user = fireAuth().currentUser
-    if (this.user == null) {
+    // Sign In if needed, then join waiting room
+    if (fireAuth().currentUser == null) {
       fireAuth().signInAnonymously()
         .then((user) => {
           this.user = user
           this.joinWaitingRoom()
         })
-        .catch((err) => {
-          this.$disp_error(err, this)
-        })
+        .catch(err => this.$disp_error('signInAnon: ' + err, this))
     } else this.joinWaitingRoom()
   },
   beforeDestroy() {
-    fireDb().ref('waitingroom/' + this.user.uid).remove().catch(err => this.$disp_error('removefromWR' + err, this))
+    this.submitExitRace({ raceId: this.raceRef.key })
     
-    clearInterval(this.updateFuncInterval)
-    
+    // Destroy pixi application
     this.app.destroy(false, true)
   },
   methods: {
+    submitSolution: fireFuncs().httpsCallable('submitProblemSolution'),
+    submitFuelUpdate: fireFuncs().httpsCallable('submitFuelLevelUpdate'),
+    submitExitRace: fireFuncs().httpsCallable('exitRace'),
     joinWaitingRoom() {
       // Initialize Pixi window
-      this.app = new PIXI.Application({ width: 700, height: 450, view: this.$refs.raceCanvas, backgroundColor: 0xa1a1a1, forceCanvas: true })
+      this.app = new PIXI.Application({
+        width: this.config.canvasWidth,
+        height: this.config.canvasHeight,
+        view: this.$refs.raceCanvas,
+        backgroundColor: 0xa1a1a1,
+        forceCanvas: this.config.forceCanvas
+      })
       
       // Add user to waiting room
       const waitingRoomRef = fireDb().ref('waitingroom/' + this.user.uid)
       
       waitingRoomRef.set({
         waiting: true
-      }).catch((err) => { this.$disp_error('waitingroomset:' + err, this) })
+      }).catch(err => this.$disp_error('waitingroomset:' + err, this))
       waitingRoomRef.onDisconnect().remove()
       
       // Update waiting room data
@@ -143,39 +152,64 @@ export default {
       this.game.questionLabel = 'Problem:'
       this.game.questionValue = 'wait...'
       
-      // firstProblem will appear when race is started. Start race:
-      this.raceRef.child('firstProblem').on('value', (snap) => {
-        if (snap.val()) {
-          document.title = 'Arithmerace'
-          this.$toast.open('Race starting!')
-          this.game.questionValue = snap.val()
-          this.game.solutionInputDisabled = false
-          this.$refs.solutionInput.focus()
-          this.game.fuel = 20
-
-          // Update players then start player update listener
-          this.raceRef.child('player').once('value', (snap) => {
-            this.updatePlayers(snap)
-            
-            // Start graphics loop (60 fps)
-            this.app.ticker.add(delta => this.main(delta))
-            
-            // Start data update loop (20 fps)
-            this.updateFuncInterval = setInterval(this.update, 50)
-            
-            this.raceRef.child('player').on('value', this.updatePlayers)
-          })
+      // Fetch player data
+      this.raceRef.child('player').once('value', (snap) => {
+        // Create player objects
+        for (const [playerid, player] of Object.entries(snap.val())) {
+          this.game.players[playerid] = {
+            lane: player.lane,
+            fuel: {
+              is: 0,
+              was: 0
+            },
+            speed: {
+              is: 0,
+              was: 0,
+              at: 0 // Speed was speed.was at speed.at timestamp
+            },
+            progress: 0,
+            sprite: new PIXI.Graphics()
+              .beginFill(0xd4a933)
+              .drawRect(0, (player.lane - 1) * 80, 50, 50)
+              .endFill()
+          }
+          
+          // Add player sprite to stage
+          this.app.stage.addChild(this.game.players[playerid].sprite)
         }
+        
+        // Start graphics loop (60 fps)
+        this.app.ticker.add(delta => this.main(delta))
+        
+        // firstProblem will appear when race is started. Start race:
+        this.raceRef.child('firstProblem').on('value', (snap) => {
+          if (snap.val()) {
+            document.title = 'Arithmerace'
+            this.$toast.open('Race starting!')
+            this.game.questionValue = snap.val()
+            this.game.solutionInputDisabled = false
+            this.$refs.solutionInput.focus()
+            this.game.fuel = 20
+            
+            // Start player update listener
+            this.raceRef.child('player').on('value', snap => this.updatePlayers(snap))
+            
+            this.game.started = true
+          }
+        })
       })
     },
     main(delta) {
-      console.log('hey')
+      if (this.game.started) this.update()
+      
+      for (const player of Object.values(this.game.players)) {
+        // Set each player's x position
+        player.sprite.x = player.progress * (this.config.canvasWidth / 100)
+      }
     },
     update() {
-      // Calculate current fuel
+      const timeSinceLastFuelUpdate = (Date.now() - this.game.fuelTimestamp) / 1000
       for (const player of Object.values(this.game.players)) {
-        const timeSinceLastFuelUpdate = (Date.now() - this.game.fuelTimestamp) / 1000
-        
         // Subtract (fuel consumption rate * seconds since last fuel value) from last fuel value, then round and clamp to 0-100
         player.fuel.is = Math.max(Math.min(Math.round(player.fuel.was - timeSinceLastFuelUpdate * this.config.fuelConsumedPerSecond), 100), 0)
         
@@ -187,23 +221,16 @@ export default {
       this.game.speed = this.game.players[this.user.uid].speed
     },
     updatePlayers(snap) {
+      this.game.fuelTimestamp = Date.now()
+      
       for (const [playerid, player] of Object.entries(snap.val())) {
-        this.game.players[playerid] = {
-          fuel: {
-            was: player.fuel,
-            is: player.fuel
-          }
-        }
-        
-        this.game.fuelTimestamp = Date.now()
+        this.game.players[playerid].fuel.was = player.fuel
       }
     },
     updateWaitingRoom(room) {
       if (room !== null) this.game.questionValue = Object.keys(room).length.toString() + ' player(s)'
       else this.game.questionValue = '0 players'
     },
-    submitSolution: fireFuncs().httpsCallable('submitProblemSolution'),
-    submitFuelUpdate: fireFuncs().httpsCallable('submitFuelLevelUpdate'),
     handleSolution() {
       this.game.solutionInputDisabled = true
       // Submit user's solution then process result:
@@ -211,8 +238,12 @@ export default {
         solution: this.game.userSolution,
         raceId: this.raceRef.key
       }).then((result) => {
-        this.submitFuelUpdate({ raceId: this.raceRef.key }).catch(err => this.$disp_error('submitFuelUpdate:' + err.message, this))
-        if (result.data.correct) {
+        if (result.data.finished) {
+          this.game.questionValue = 'early'
+          this.game.questionLabel = 'finished'
+          this.$toast.open("Good job, you finished all the problems!")
+        }
+        else if (result.data.correct) {
           this.game.questionValue = result.data.nextProblem
           this.game.solutionFieldType = 'is-success'
           setTimeout(() => {

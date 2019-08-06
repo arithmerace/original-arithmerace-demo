@@ -4,7 +4,7 @@ const cfg = require('./config.json')
 
 exports.convertWRtoGame = (snap, ctx) => {
   snap.ref.parent.once("value", (wrsnap, ctx) => {
-    if (wrsnap.numChildren() == 1) {
+    if (wrsnap.numChildren() == cfg.playersToStartRace) {
       // Create new game ref
       const raceRef = admin.database().ref('race').push()
       raceRef.child('started').set(false)

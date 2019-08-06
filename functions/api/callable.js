@@ -13,7 +13,13 @@ exports.submitProblemSolution = (data, ctx) => {
           if (data.solution === problems[playerSnap.val().currentProblem].solution.toString()) {
             result.correct = true
             // Set next problem
-            result.nextProblem = problems[playerSnap.val().currentProblem + 1].question
+            const nextProblem = problems[playerSnap.val().currentProblem + 1]
+            if (nextProblem === undefined) {
+              result.finished = true
+              return result
+            }
+            
+            result.nextProblem = nextProblem.question
             playerSnap.child('currentProblem').ref.set(playerSnap.val().currentProblem + 1)
             playerSnap.child('fuel').ref.set(playerSnap.val().fuel + cfg.newFuel)
             playerSnap.child('updateTimestamp').ref.set(Date.now())
@@ -41,8 +47,20 @@ exports.submitFuelLevelUpdate = (data, ctx) => {
       // calculate fuel remaining, and clamp to 0-100
       const newFuel = Math.max(Math.min(Math.round(playerSnap.val().fuel - (timeSinceLastUpdate / 1000 * cfg.fuelConsumedPerSecond)), 100), 0)
       
+      console.log(newFuel)
+      
       playerSnap.child('fuel').ref.set(newFuel)
         
       updateTimestamp.ref.set(Date.now())
     })
+}
+
+exports.exitRace = (data, ctx) => {
+  if (!data.raceId) {
+    admin.database().ref('waitingroom/' + ctx.auth.uid).remove()
+    return
+  }
+  
+  admin.database().ref('user/' + ctx.auth.uid + '/assignedRace').remove()
+  admin.database().ref('race/' + data.raceId + '/player/' + ctx.auth.uid).remove()
 }

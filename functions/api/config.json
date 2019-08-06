@@ -3,5 +3,7 @@
   "newFuel": 10,
   "numProblemsPerRace": 12,
   "fuelConsumedPerSecond": 3,
-  "startingFuel": 20
+  "movementRate": 0.1,
+  "startingFuel": 20,
+  "playersToStartRace": 2
 }
