@@ -4,6 +4,7 @@
   "numProblemsPerRace": 12,
   "fuelConsumedPerSecond": 3,
   "movementRate": 0.1,
+  "fuelSpeedInterval": 20,
   "startingFuel": 20,
   "playersToStartRace": 2
 }

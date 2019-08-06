@@ -94,25 +94,30 @@ export default {
     }
   },
   mounted() {
-    // Sign In if needed, then join waiting room
-    if (fireAuth().currentUser == null) {
-      fireAuth().signInAnonymously()
-        .then((user) => {
-          this.user = user
-          this.joinWaitingRoom()
-        })
-        .catch(err => this.$disp_error('signInAnon: ' + err, this))
-    } else this.joinWaitingRoom()
+    fireAuth().onAuthStateChanged((user) => {
+      if (user) {
+        this.user = user
+        this.joinWaitingRoom()
+      } else {
+        fireAuth().signInAnonymously()
+          .then((user) => {
+            this.user = user
+            this.joinWaitingRoom()
+          })
+          .catch(err => this.$disp_error('signInAnon: ' + err, this))
+      }
+    })
   },
   beforeDestroy() {
-    this.submitExitRace({ raceId: this.raceRef.key })
+    const raceId = this.raceRef.key || null
+    this.submitExitRace({ raceId })
     
     // Destroy pixi application
     this.app.destroy(false, true)
   },
   methods: {
     submitSolution: fireFuncs().httpsCallable('submitProblemSolution'),
-    submitFuelUpdate: fireFuncs().httpsCallable('submitFuelLevelUpdate'),
+    submitSpeedUpdate: fireFuncs().httpsCallable('submitSpeedUpdate'),
     submitExitRace: fireFuncs().httpsCallable('exitRace'),
     joinWaitingRoom() {
       // Initialize Pixi window
@@ -167,7 +172,10 @@ export default {
               was: 0,
               at: 0 // Speed was speed.was at speed.at timestamp
             },
-            progress: 0,
+            progress: {
+              is: 0,
+              was: 0
+            },
             sprite: new PIXI.Graphics()
               .beginFill(0xd4a933)
               .drawRect(0, (player.lane - 1) * 80, 50, 50)
@@ -214,17 +222,29 @@ export default {
         player.fuel.is = Math.max(Math.min(Math.round(player.fuel.was - timeSinceLastFuelUpdate * this.config.fuelConsumedPerSecond), 100), 0)
         
         // Calculate player's speed based on fuel
-        player.speed = Math.floor((player.fuel.is - 1) / this.config.fuelSpeedInterval) + 1
+        player.speed.is = Math.floor((player.fuel.is - 1) / this.config.fuelSpeedInterval) + 1
+        
+        if (player.speed.is !== player.speed.was) {
+          player.speed.at = Date.now()
+          player.speed.was = player.speed.is
+          player.progress.was = player.progress.is
+        }
+        
+        const timeSinceLastSpeedChange = (Date.now() - player.speed.at) / 1000
+        
+        // Calculate player's progress based on speed
+        player.progress.is = player.progress.was + (timeSinceLastSpeedChange * this.config.movementRate * player.speed.is)
       }
       // Set this user's fuel and speed
       this.game.fuel = this.game.players[this.user.uid].fuel.is
-      this.game.speed = this.game.players[this.user.uid].speed
+      this.game.speed = this.game.players[this.user.uid].speed.is
     },
     updatePlayers(snap) {
       this.game.fuelTimestamp = Date.now()
       
       for (const [playerid, player] of Object.entries(snap.val())) {
         this.game.players[playerid].fuel.was = player.fuel
+        // TODO update progress and speed
       }
     },
     updateWaitingRoom(room) {
@@ -241,9 +261,8 @@ export default {
         if (result.data.finished) {
           this.game.questionValue = 'early'
           this.game.questionLabel = 'finished'
-          this.$toast.open("Good job, you finished all the problems!")
-        }
-        else if (result.data.correct) {
+          this.$toast.open('Good job, you finished all the problems!')
+        } else if (result.data.correct) {
           this.game.questionValue = result.data.nextProblem
           this.game.solutionFieldType = 'is-success'
           setTimeout(() => {
@@ -273,8 +292,8 @@ export default {
   },
   watch: {
     speedwatch() {
-      // Request server update every time player's speed level changes, to ensure that clients are updated.
-      this.submitFuelUpdate({ raceId: this.raceRef.key }).catch(err => this.$disp_error('submitFuelUpdate:' + err.message, this))
+      // Request server update every time this player's speed level changes, to ensure that clients are updated.
+      this.submitSpeedUpdate({ raceId: this.raceRef.key }).catch(err => this.$disp_error('submitSpeedUpdate:' + err.message, this))
     }
   }
 }

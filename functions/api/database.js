@@ -14,6 +14,7 @@ exports.convertWRtoGame = (snap, ctx) => {
         // For each player in waiting room, add player data to race then remove player from waiting room
         raceRef.child('player/' + player.key).set({
           progress: 0,
+          speed: 0,
           fuel: cfg.startingFuel,
           updateTimestamp: null,
           currentProblem: 0,
