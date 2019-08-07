@@ -66,7 +66,7 @@ export default {
       user: null,
       raceRef: null,
       config: { // Corresponding values in API config and client config should match
-        movementRate: 0.1,
+        movementRate: 1,
         fuelConsumedPerSecond: 3,
         fuelSpeedInterval: 20, // interval of fuel needed to to change speed
         canvasHeight: 450,
@@ -109,7 +109,7 @@ export default {
     })
   },
   beforeDestroy() {
-    const raceId = this.raceRef.key || null
+    const raceId = (this.raceRef !== null) ? this.raceRef.key : null
     this.submitExitRace({ raceId })
     
     // Destroy pixi application
@@ -182,9 +182,6 @@ export default {
               .endFill()
           }
           
-          // Start player update listener
-          this.raceRef.child('player/' + playerid).on('value', snap => this.updatePlayer(snap, playerid))
-          
           // Add player sprite to stage
           this.app.stage.addChild(this.game.players[playerid].sprite)
         }
@@ -200,8 +197,9 @@ export default {
             this.game.questionValue = snap.val()
             this.game.solutionInputDisabled = false
             this.$refs.solutionInput.focus()
-            for (const player of Object.values(this.game.players)) {
-              player.updateTimestamp = Date.now()
+            for (const playerid of Object.keys(this.game.players)) {
+              // Start player update listener
+              this.raceRef.child('player/' + playerid).on('value', snap => this.updatePlayer(snap, playerid))
             }
             
             this.game.started = true
@@ -214,7 +212,7 @@ export default {
       
       for (const player of Object.values(this.game.players)) {
         // Set each player's x position
-        player.sprite.x = player.progress * (this.config.canvasWidth / 100)
+        player.sprite.x = player.progress.is * (this.config.canvasWidth / 100)
       }
     },
     update() {
@@ -229,16 +227,16 @@ export default {
         // Calculate player's speed based on fuel
         player.speed.is = Math.floor((player.fuel.is - 1) / this.config.fuelSpeedInterval) + 1
         
+        // Check if player's speed has changed; if so, update timestamp and change speed, fuel, and progress values
+        // if (player.speed.is !== player.speed.was) {
+        //   player.updateTimestamp = Date.now()
+        //   player.speed.was = player.speed.is
+        //   player.fuel.was = player.fuel.is
+        //   player.progress.was = player.progress.is
+        // }
+        
         // Calculate player's progress based on speed
         player.progress.is = player.progress.was + (timeSinceLastUpdate * this.config.movementRate * player.speed.is)
-        
-        // Check if player's speed has changed; if so, update timestamp and change speed, fuel, and progress values
-        if (player.speed.is !== player.speed.was) {
-          player.updateTimestamp = Date.now()
-          player.speed.was = player.speed.is
-          player.fuel.was = player.fuel.is
-          player.progress.was = player.progress.is
-        }
       }
       // Set this user's fuel and speed
       this.game.fuel = this.game.players[this.user.uid].fuel.is
@@ -248,6 +246,7 @@ export default {
       this.game.players[playerid].updateTimestamp = Date.now()
       this.game.players[playerid].fuel.was = snap.val().fuel
       this.game.players[playerid].speed.was = snap.val().speed
+      console.log(`Setting progress to ${snap.val().progress}`)
       this.game.players[playerid].progress.was = snap.val().progress
     },
     updateWaitingRoom(room) {

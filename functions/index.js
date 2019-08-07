@@ -39,10 +39,10 @@ exports.convertWaitingRoomToGame = functions.database
   .ref('waitingroom/{user}')
   .onCreate(dbApi.convertWRtoGame)
 /* END DB WATCH */
-  
+
 /* CALLABLE API */
 exports.submitProblemSolution = functions.https.onCall(api.submitProblemSolution)
-exports.submitFuelLevelUpdate = functions.https.onCall(api.submitFuelLevelUpdate)
+exports.submitSpeedUpdate = functions.https.onCall(api.submitSpeedUpdate)
 
 exports.exitRace = functions.https.onCall(api.exitRace)
 /* END CALLABLE API */
