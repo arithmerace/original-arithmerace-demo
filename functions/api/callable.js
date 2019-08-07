@@ -19,7 +19,6 @@ exports.submitProblemSolution = (data, ctx) => {
               playerSnap.child('finished').ref.set(true)
               return result
             }
-            
             result.nextProblem = nextProblem.question
             playerSnap.child('currentProblem').ref.set(playerSnap.val().currentProblem + 1)
             

@@ -9,8 +9,8 @@
           <div class="ui-label">Batteries</div>
           <div
             class="ui-value"
-            :class="{ 'fuel-full': game.speed >= 4, 'fuel-medium': game.speed >= 2 && game.speed < 4, 'fuel-low': game.speed < 2 }" >
-            {{ game.speed }}
+            :class="{ 'fuel-full': game.numBatteries >= 4, 'fuel-medium': game.numBatteries >= 2 && game.numBatteries < 4, 'fuel-low': game.numBatteries < 2 }" >
+            {{ game.numBatteries }}
           </div>
         </div>
       </div>
@@ -20,18 +20,18 @@
       </div>
       <div class="column" @keyup.enter="handleSolution">
         <div class="ui-label">Your solution</div>
-          <b-field :type="game.solutionFieldType">
-            <b-input
-              placeholder="Enter a number"
-              v-model="game.userSolution"
-              type="number"
-              :disabled="game.solutionInputDisabled"
-              ref="solutionInput"
-            />
-            <b-button :disabled="game.solutionInputDisabled" type="is-primary" @click="handleSolution">
-              <b-icon icon="arrow-right" />
-            </b-button>
-          </b-field>
+        <b-field :type="game.solutionFieldType">
+          <b-input
+            placeholder="Enter a number"
+            v-model="game.userSolution"
+            type="number"
+            :disabled="game.solutionInputDisabled"
+            ref="solutionInput"
+          />
+          <b-button :disabled="game.solutionInputDisabled" type="is-primary" @click="handleSolution">
+            <b-icon icon="arrow-right" />
+          </b-button>
+        </b-field>
       </div>
       <div class="columns column">
         <div class="column">
@@ -61,10 +61,11 @@ export default {
       app: null,
       user: null,
       raceRef: null,
+      serverTimeOffset: null,
       config: {
         // This part should match server config
         batteryLifeSpan: 5,
-        batteryMovementPerSecond: 1,
+        batteryProgressPerSecond: 1,
         // Client-only config
         canvasHeight: 450,
         canvasWidth: 700,
@@ -72,8 +73,8 @@ export default {
       },
       game: {
         started: false,
-        speed: 0,
         position: '-',
+        numBatteries: 0,
         questionValue: '',
         questionLabel: 'In waiting room',
         userSolution: '',
@@ -81,6 +82,11 @@ export default {
         solutionFieldType: null,
         players: {}
       }
+    }
+  },
+  computed: {
+    numBatteries() {
+      return this.p
     }
   },
   mounted() {
@@ -154,6 +160,8 @@ export default {
           this.game.players[playerid] = {
             lane: player.lane,
             batteries: {},
+            numBatteries: 0,
+            progress: 0,
             sprite: new PIXI.Graphics()
               .beginFill(0xd4a933)
               .drawRect(0, (player.lane - 1) * 80, 50, 50)
@@ -166,6 +174,11 @@ export default {
         
         // Start graphics loop (60 fps)
         this.app.ticker.add(delta => this.main(delta))
+
+        // Start clock skew listener
+        fireDb().ref('.info/serverTimeOffset').on('value', (snap) => {
+          this.serverTimeOffset = snap.val()
+        })
         
         // firstProblem will appear when race is started. Start race:
         this.raceRef.child('firstProblem').on('value', (snap) => {
@@ -179,7 +192,6 @@ export default {
               // Start player update listener
               this.raceRef.child('player/' + playerid).on('value', snap => this.updatePlayer(snap, playerid))
             }
-            
             this.game.started = true
           }
         })
@@ -195,33 +207,25 @@ export default {
     },
     update() {
       for (const player of Object.values(this.game.players)) {
-        // This should behave the same as the logic in the submitSpeedUpdate API function
-        
-        const timeSinceLastUpdate = (Date.now() - player.updateTimestamp) / 1000
-        
-        // Subtract (fuel consumption rate * seconds since last fuel value) from last fuel value, then round and clamp to 0-100
-        player.fuel.is = Math.max(Math.min(Math.round(player.fuel.was - timeSinceLastUpdate * this.config.fuelConsumedPerSecond), 100), 0)
-        
-        // Calculate player's speed based on fuel
-        player.speed.is = Math.floor((player.fuel.is - 1) / this.config.fuelSpeedInterval) + 1
-        
-        // Check if player's speed has changed; if so, update timestamp and change speed, fuel, and progress values
-        // if (player.speed.is !== player.speed.was) {
-        //   player.updateTimestamp = Date.now()
-        //   player.speed.was = player.speed.is
-        //   player.fuel.was = player.fuel.is
-        //   player.progress.was = player.progress.is
-        // }
-        
-        // Calculate player's progress based on speed
-        player.progress.is = player.progress.was + (timeSinceLastUpdate * this.config.movementRate * player.speed.is)
+        let progress = 0
+        let numBatteries = 0
+        for (const battery of Object.values(player.batteries)) {
+          const timeSinceUsed = (Date.now + this.serverTimeOffset) - battery.used
+          if (timeSinceUsed > this.config.batteryLifeSpan) {
+            progress += this.config.batteryProgressPerSecond * this.config.batteryLifeSpan
+          } else {
+            progress += this.config.batteryProgressPerSecond * timeSinceUsed
+            numBatteries += 1
+          }
+        }
+        player.progress = progress
+        player.numBatteries = numBatteries
       }
       // Set this user's fuel and speed
-      this.game.fuel = this.game.players[this.user.uid].fuel.is
-      this.game.speed = this.game.players[this.user.uid].speed.is
+      this.game.numBatteries = this.game.players[this.user.uid].numBatteries
     },
     updatePlayer(snap, playerid) {
-      this.game.players[playerid].updateTimestamp = Date.now()
+      console.log(snap.val())
       this.game.players[playerid].batteries = snap.val().batteries
     },
     updateWaitingRoom(room) {

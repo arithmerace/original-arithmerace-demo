@@ -42,7 +42,6 @@ exports.convertWaitingRoomToGame = functions.database
 
 /* CALLABLE API */
 exports.submitProblemSolution = functions.https.onCall(api.submitProblemSolution)
-exports.submitSpeedUpdate = functions.https.onCall(api.submitSpeedUpdate)
 
 exports.exitRace = functions.https.onCall(api.exitRace)
 /* END CALLABLE API */
