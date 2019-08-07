@@ -65,10 +65,10 @@ export default {
       app: null,
       user: null,
       raceRef: null,
-      config: {
+      config: { // Corresponding values in API config and client config should match
         movementRate: 0.1,
         fuelConsumedPerSecond: 3,
-        fuelSpeedInterval: 20, // amount of fuel needed to get to next speed level
+        fuelSpeedInterval: 20, // interval of fuel needed to to change speed
         canvasHeight: 450,
         canvasWidth: 700,
         forceCanvas: true
@@ -163,14 +163,14 @@ export default {
         for (const [playerid, player] of Object.entries(snap.val())) {
           this.game.players[playerid] = {
             lane: player.lane,
+            updateTimestamp: 0,
             fuel: {
               is: 0,
               was: 0
             },
             speed: {
               is: 0,
-              was: 0,
-              at: 0 // Speed was speed.was at speed.at timestamp
+              was: 0
             },
             progress: {
               is: 0,
@@ -181,6 +181,9 @@ export default {
               .drawRect(0, (player.lane - 1) * 80, 50, 50)
               .endFill()
           }
+          
+          // Start player update listener
+          this.raceRef.child('player/' + playerid).on('value', snap => this.updatePlayer(snap, playerid))
           
           // Add player sprite to stage
           this.app.stage.addChild(this.game.players[playerid].sprite)
@@ -197,10 +200,9 @@ export default {
             this.game.questionValue = snap.val()
             this.game.solutionInputDisabled = false
             this.$refs.solutionInput.focus()
-            this.game.fuel = 20
-            
-            // Start player update listener
-            this.raceRef.child('player').on('value', snap => this.updatePlayers(snap))
+            for (const player of Object.values(this.game.players)) {
+              player.updateTimestamp = Date.now()
+            }
             
             this.game.started = true
           }
@@ -216,36 +218,37 @@ export default {
       }
     },
     update() {
-      const timeSinceLastFuelUpdate = (Date.now() - this.game.fuelTimestamp) / 1000
       for (const player of Object.values(this.game.players)) {
+        // This should behave the same as the logic in the submitSpeedUpdate API function
+        
+        const timeSinceLastUpdate = (Date.now() - player.updateTimestamp) / 1000
+        
         // Subtract (fuel consumption rate * seconds since last fuel value) from last fuel value, then round and clamp to 0-100
-        player.fuel.is = Math.max(Math.min(Math.round(player.fuel.was - timeSinceLastFuelUpdate * this.config.fuelConsumedPerSecond), 100), 0)
+        player.fuel.is = Math.max(Math.min(Math.round(player.fuel.was - timeSinceLastUpdate * this.config.fuelConsumedPerSecond), 100), 0)
         
         // Calculate player's speed based on fuel
         player.speed.is = Math.floor((player.fuel.is - 1) / this.config.fuelSpeedInterval) + 1
         
+        // Calculate player's progress based on speed
+        player.progress.is = player.progress.was + (timeSinceLastUpdate * this.config.movementRate * player.speed.is)
+        
+        // Check if player's speed has changed; if so, update timestamp and change speed, fuel, and progress values
         if (player.speed.is !== player.speed.was) {
-          player.speed.at = Date.now()
+          player.updateTimestamp = Date.now()
           player.speed.was = player.speed.is
+          player.fuel.was = player.fuel.is
           player.progress.was = player.progress.is
         }
-        
-        const timeSinceLastSpeedChange = (Date.now() - player.speed.at) / 1000
-        
-        // Calculate player's progress based on speed
-        player.progress.is = player.progress.was + (timeSinceLastSpeedChange * this.config.movementRate * player.speed.is)
       }
       // Set this user's fuel and speed
       this.game.fuel = this.game.players[this.user.uid].fuel.is
       this.game.speed = this.game.players[this.user.uid].speed.is
     },
-    updatePlayers(snap) {
-      this.game.fuelTimestamp = Date.now()
-      
-      for (const [playerid, player] of Object.entries(snap.val())) {
-        this.game.players[playerid].fuel.was = player.fuel
-        // TODO update progress and speed
-      }
+    updatePlayer(snap, playerid) {
+      this.game.players[playerid].updateTimestamp = Date.now()
+      this.game.players[playerid].fuel.was = snap.val().fuel
+      this.game.players[playerid].speed.was = snap.val().speed
+      this.game.players[playerid].progress.was = snap.val().progress
     },
     updateWaitingRoom(room) {
       if (room !== null) this.game.questionValue = Object.keys(room).length.toString() + ' player(s)'
@@ -292,7 +295,7 @@ export default {
   },
   watch: {
     speedwatch() {
-      // Request server update every time this player's speed level changes, to ensure that clients are updated.
+      // Request server update every time this player's speed level changes, which will verify all speed/fuel/progress changes and update the database.
       this.submitSpeedUpdate({ raceId: this.raceRef.key }).catch(err => this.$disp_error('submitSpeedUpdate:' + err.message, this))
     }
   }
