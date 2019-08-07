@@ -16,16 +16,14 @@ exports.submitProblemSolution = (data, ctx) => {
             const nextProblem = problems[playerSnap.val().currentProblem + 1]
             if (nextProblem === undefined) {
               result.finished = true
+              playerSnap.child('finished').ref.set(true)
               return result
             }
             
             result.nextProblem = nextProblem.question
             playerSnap.child('currentProblem').ref.set(playerSnap.val().currentProblem + 1)
             
-            // Update player, then add fuel
-            updatePlayer({ raceId: data.raceId }, ctx).then((updated) => {
-              playerSnap.child('fuel').ref.set(updated.fuel + cfg.newFuel)
-            })
+            playerSnap.child('batteries').ref.push({ used: Date.now() })
           }
           
           return result

@@ -1,10 +1,10 @@
 {
+  // This part should match client config
+  "batteryLifeSpan": 5,
+  "batteryMovementPerSecond": 1,
+  // Server-only config
+  "startingBatteries": 1,
+  "playersToStartRace": 2,
   "raceStartDelay": 10000,
-  "newFuel": 10,
-  "numProblemsPerRace": 12,
-  "fuelConsumedPerSecond": 3,
-  "movementRate": 0.1,
-  "fuelSpeedInterval": 20,
-  "startingFuel": 20,
-  "playersToStartRace": 2
+  "numProblemsPerRace": 12
 }

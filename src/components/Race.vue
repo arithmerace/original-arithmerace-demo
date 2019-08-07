@@ -61,18 +61,17 @@ export default {
       app: null,
       user: null,
       raceRef: null,
-      config: { // Corresponding values in API config and client config should match
-        movementRate: 1,
-        fuelConsumedPerSecond: 3,
-        fuelSpeedInterval: 20, // interval of fuel needed to to change speed
+      config: {
+        // This part should match server config
+        batteryLifeSpan: 5,
+        batteryMovementPerSecond: 1,
+        // Client-only config
         canvasHeight: 450,
         canvasWidth: 700,
         forceCanvas: true
       },
       game: {
         started: false,
-        fuel: 0,
-        fuelTimestamp: 0,
         speed: 0,
         position: '-',
         questionValue: '',
@@ -82,11 +81,6 @@ export default {
         solutionFieldType: null,
         players: {}
       }
-    }
-  },
-  computed: {
-    speedwatch() {
-      return this.game.speed
     }
   },
   mounted() {
@@ -159,19 +153,7 @@ export default {
         for (const [playerid, player] of Object.entries(snap.val())) {
           this.game.players[playerid] = {
             lane: player.lane,
-            updateTimestamp: 0,
-            fuel: {
-              is: 0,
-              was: 0
-            },
-            speed: {
-              is: 0,
-              was: 0
-            },
-            progress: {
-              is: 0,
-              was: 0
-            },
+            batteries: {},
             sprite: new PIXI.Graphics()
               .beginFill(0xd4a933)
               .drawRect(0, (player.lane - 1) * 80, 50, 50)
@@ -240,10 +222,7 @@ export default {
     },
     updatePlayer(snap, playerid) {
       this.game.players[playerid].updateTimestamp = Date.now()
-      this.game.players[playerid].fuel.was = snap.val().fuel
-      this.game.players[playerid].speed.was = snap.val().speed
-      console.log(`Setting progress to ${snap.val().progress}`)
-      this.game.players[playerid].progress.was = snap.val().progress
+      this.game.players[playerid].batteries = snap.val().batteries
     },
     updateWaitingRoom(room) {
       if (room !== null) this.game.questionValue = Object.keys(room).length.toString() + ' player(s)'
@@ -286,12 +265,6 @@ export default {
           }, 500)
         }
       }).catch(err => this.$disp_error('submitSolution:' + err.message, this))
-    }
-  },
-  watch: {
-    speedwatch() {
-      // Request server update every time this player's speed level changes, which will verify all speed/fuel/progress changes and update the database.
-      this.submitSpeedUpdate({ raceId: this.raceRef.key }).catch(err => this.$disp_error('submitSpeedUpdate:' + err.message, this))
     }
   }
 }
