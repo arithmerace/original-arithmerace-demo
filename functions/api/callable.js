@@ -1,45 +1,6 @@
 const admin = require('firebase-admin')
 const cfg = require('./config.json')
 
-function updatePlayer(data, ctx) {
-  // This should behave the same as the client-side version, the update method
-
-  return admin.database().ref('race/' + data.raceId).once('value')
-    .then((snap) => {
-      playerSnap = snap.child('player/' + ctx.auth.uid)
-      if (playerSnap.val() === null) {
-        console.error(`User ${ctx.auth.uid} not in race ${data.raceId}`)
-        return
-      }
-      
-      // Get last update
-      const updateTimestampSnap = playerSnap.child('updateTimestamp')
-      const timeSinceLastUpdate = Date.now() - (updateTimestampSnap.val() || snap.val().startTime) / 1000
-      
-      // Calculate fuel remaining, and clamp to 0-100
-      const fuel = Math.max(Math.min(Math.round(playerSnap.val().fuel - timeSinceLastUpdate * cfg.fuelConsumedPerSecond), 100), 0)
-      
-      // Calculate speed based on fuel
-      const speed = Math.floor((fuel - 1) / cfg.fuelSpeedInterval) + 1
-      
-      // Calculate progress based on speed
-      const progress = playerSnap.val().progress + (timeSinceLastUpdate * cfg.movementRate * speed)
-
-      // Update fuel, speed, progress, and timestamp
-      updateTimestampSnap.ref.set(Date.now())
-      playerSnap.child('fuel').ref.set(fuel)
-      playerSnap.child('speed').ref.set(speed)
-      playerSnap.child('progress').ref.set(progress)
-      
-      // Return updated data
-      return {
-        fuel,
-        speed,
-        progress
-      }
-    })
-}
-
 exports.submitProblemSolution = (data, ctx) => {
   return admin.database().ref('_race/' + data.raceId + '/problems').once('value')
     .then((problemsSnap) => {
@@ -70,10 +31,6 @@ exports.submitProblemSolution = (data, ctx) => {
           return result
         })
     })
-}
-
-exports.submitSpeedUpdate = (data, ctx) => {
-  updatePlayer(data, ctx)
 }
 
 exports.exitRace = (data, ctx) => {

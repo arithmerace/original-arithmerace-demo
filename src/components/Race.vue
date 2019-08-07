@@ -6,16 +6,12 @@
     <div id="ui" class="columns">
       <div class="columns column">
         <div class="column">
-          <div class="ui-label">Fuel</div>
+          <div class="ui-label">Batteries</div>
           <div
             class="ui-value"
-            :class="{ 'fuel-full': game.fuel >= 60, 'fuel-medium': game.fuel >= 30 && game.fuel < 60, 'fuel-low': game.fuel < 30 }" >
-            {{ game.fuel }}%
+            :class="{ 'fuel-full': game.speed >= 4, 'fuel-medium': game.speed >= 2 && game.speed < 4, 'fuel-low': game.speed < 2 }" >
+            {{ game.speed }}
           </div>
-        </div>
-        <div class="column">
-          <div class="ui-label">Speed</div>
-          <div class="ui-value" >{{ game.speed }}</div>
         </div>
       </div>
       <div class="column">
