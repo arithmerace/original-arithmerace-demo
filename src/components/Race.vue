@@ -84,11 +84,6 @@ export default {
       }
     }
   },
-  computed: {
-    numBatteries() {
-      return this.p
-    }
-  },
   mounted() {
     fireAuth().onAuthStateChanged((user) => {
       if (user) {
@@ -105,7 +100,7 @@ export default {
     })
   },
   beforeDestroy() {
-    const raceId = (this.raceRef !== null) ? this.raceRef.key : null
+    const raceId = (this.raceRef) ? this.raceRef.key : null
     this.submitExitRace({ raceId })
     
     // Destroy pixi application
@@ -162,6 +157,7 @@ export default {
             batteries: {},
             numBatteries: 0,
             progress: 0,
+            finished: false,
             sprite: new PIXI.Graphics()
               .beginFill(0xd4a933)
               .drawRect(0, (player.lane - 1) * 80, 50, 50)
@@ -202,7 +198,7 @@ export default {
       
       for (const player of Object.values(this.game.players)) {
         // Set each player's x position
-        player.sprite.x = player.progress.is * (this.config.canvasWidth / 100)
+        player.sprite.x = player.progress * (this.config.canvasWidth / 100)
       }
     },
     update() {
@@ -210,7 +206,7 @@ export default {
         let progress = 0
         let numBatteries = 0
         for (const battery of Object.values(player.batteries)) {
-          const timeSinceUsed = (Date.now + this.serverTimeOffset) - battery.used
+          const timeSinceUsed = ((Date.now() + this.serverTimeOffset) - battery.used) / 1000
           if (timeSinceUsed > this.config.batteryLifeSpan) {
             progress += this.config.batteryProgressPerSecond * this.config.batteryLifeSpan
           } else {
@@ -218,15 +214,15 @@ export default {
             numBatteries += 1
           }
         }
-        player.progress = progress
+        player.progress = (!player.finished) ? progress : 100
         player.numBatteries = numBatteries
       }
       // Set this user's fuel and speed
       this.game.numBatteries = this.game.players[this.user.uid].numBatteries
     },
     updatePlayer(snap, playerid) {
-      console.log(snap.val())
       this.game.players[playerid].batteries = snap.val().batteries
+      this.game.players[playerid].finished = snap.val().finished
     },
     updateWaitingRoom(room) {
       if (room !== null) this.game.questionValue = Object.keys(room).length.toString() + ' player(s)'
@@ -239,9 +235,10 @@ export default {
         solution: this.game.userSolution,
         raceId: this.raceRef.key
       }).then((result) => {
+        console.warn(`Client time is ${Date.now()}, server time is ${result.data.serverTime}, client time plus serverTimeOffset is ${Date.now() + this.serverTimeOffset}`)
         if (result.data.finished) {
-          this.game.questionValue = 'early'
           this.game.questionLabel = 'finished'
+          this.game.questionValue = 'early'
           this.$toast.open('Good job, you finished all the problems!')
         } else if (result.data.correct) {
           this.game.questionValue = result.data.nextProblem

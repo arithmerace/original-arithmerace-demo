@@ -8,7 +8,7 @@ exports.submitProblemSolution = (data, ctx) => {
   
       return admin.database().ref('race/' + data.raceId + '/player/' + ctx.auth.uid).once('value')
         .then((playerSnap) => {
-          const result = { correct: false }
+          const result = { correct: false, serverTime: Date.now() }
           // Compare user solution to actual solution
           if (data.solution === problems[playerSnap.val().currentProblem].solution.toString()) {
             result.correct = true
@@ -22,7 +22,9 @@ exports.submitProblemSolution = (data, ctx) => {
             result.nextProblem = nextProblem.question
             playerSnap.child('currentProblem').ref.set(playerSnap.val().currentProblem + 1)
             
-            playerSnap.child('batteries').ref.push({ used: Date.now() })
+            const newBattery = { used: Date.now() }
+            result.newBatteries = [newBattery]
+            playerSnap.child('batteries').ref.push(newBattery)
           }
           
           return result
