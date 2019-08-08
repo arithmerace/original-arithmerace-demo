@@ -1,47 +1,61 @@
 <template>
-  <div id="game">
-    <div id="canvas-div">
-      <canvas :width="config.canvasWidth" :height="config.canvasHeight" ref="raceCanvas" />
+  <div>
+    <div id="player-labels">
+      <div
+        class="speech-bubble"
+        :class="{ 'bubble-default': playerid !== user.uid, 'bubble-player': playerid === user.uid  }"
+        :style="'top: ' + player.sprite.y"
+        v-for="(player, playerid) in game.players"
+        :key="playerid" >
+        <h1>
+          {{ player.name }}
+        </h1>
+      </div>
     </div>
-    <div id="ui" class="columns">
-      <div class="columns column">
-        <div class="column">
-          <div class="ui-label">Batteries</div>
-          <div
-            class="ui-value"
-            :class="{ 'fuel-full': game.numBatteries >= 4, 'fuel-medium': game.numBatteries >= 2 && game.numBatteries < 4, 'fuel-low': game.numBatteries < 2 }" >
-            {{ game.numBatteries }}
+    <div id="game">
+      <div id="canvas-div">
+        <canvas :width="config.canvasWidth" :height="config.canvasHeight" ref="raceCanvas" />
+      </div>
+      <div id="ui" class="columns">
+        <div class="columns column">
+          <div class="column">
+            <div class="ui-label">Batteries</div>
+            <div
+              class="ui-value"
+              :class="{ 'fuel-full': game.numBatteries >= 4, 'fuel-medium': game.numBatteries >= 2 && game.numBatteries < 4, 'fuel-low': game.numBatteries < 2 }" >
+              {{ game.numBatteries }}
+            </div>
           </div>
         </div>
-      </div>
-      <div class="column">
-        <div class="ui-label">{{ game.questionLabel }}</div>
-        <div class="ui-value">{{ game.questionValue }}</div>
-      </div>
-      <div class="column" @keyup.enter="handleSolution">
-        <div class="ui-label">Your solution</div>
-        <b-field :type="game.solutionFieldType">
-          <b-input
-            placeholder="Enter a number"
-            v-model="game.userSolution"
-            type="number"
-            :disabled="game.solutionInputDisabled"
-            ref="solutionInput"
-          />
-          <b-button :disabled="game.solutionInputDisabled" type="is-primary" @click="handleSolution">
-            <b-icon icon="arrow-right" />
-          </b-button>
-        </b-field>
-      </div>
-      <div class="columns column">
         <div class="column">
-          <div class="ui-label">Position</div>
-          <div class="ui-value">{{ game.position }}</div>
+          <div class="ui-label">{{ game.questionLabel }}</div>
+          <div class="ui-value">{{ game.questionValue }}</div>
         </div>
-        <!--<div class="column">-->
-        <!--  <div class="ui-label">Accuracy</div>-->
-        <!--  <div class="ui-value">{{ game.position }}</div>-->
-        <!--</div>-->
+        <div class="column" @keyup.enter="handleSolution">
+          <div class="ui-label">Your solution</div>
+          <b-field :type="game.solutionFieldType">
+            <b-input
+              placeholder="Enter a number"
+              v-model="game.userSolution"
+              type="number"
+              :disabled="game.solutionInputDisabled"
+              ref="solutionInput"
+            />
+            <b-button :disabled="game.solutionInputDisabled" type="is-primary" @click="handleSolution">
+              <b-icon icon="arrow-right" />
+            </b-button>
+          </b-field>
+        </div>
+        <div class="columns column">
+          <div class="column">
+            <div class="ui-label">Position</div>
+            <div class="ui-value">{{ game.position }}</div>
+          </div>
+          <!--<div class="column">-->
+          <!--  <div class="ui-label">Accuracy</div>-->
+          <!--  <div class="ui-value">{{ game.position }}</div>-->
+          <!--</div>-->
+        </div>
       </div>
     </div>
   </div>
@@ -52,9 +66,12 @@ import * as PIXI from 'pixi.js-legacy'
 // const PIXI = require('pixi.js-legacy')
 import { fireAuth, fireDb, fireFuncs } from '~/plugins/firebase'
 
+// import PlayerLabel from '~/components/PlayerLabel.vue'
+
 export default {
   name: 'Race',
   components: {
+    // PlayerLabel
   },
   data() {
     return {
@@ -108,7 +125,7 @@ export default {
   },
   methods: {
     submitSolution: fireFuncs().httpsCallable('submitProblemSolution'),
-    submitSpeedUpdate: fireFuncs().httpsCallable('submitSpeedUpdate'),
+    submitFinish: fireFuncs().httpsCallable('submitFinish'),
     submitExitRace: fireFuncs().httpsCallable('exitRace'),
     joinWaitingRoom() {
       // Initialize Pixi window
@@ -154,6 +171,7 @@ export default {
         for (const [playerid, player] of Object.entries(snap.val())) {
           this.game.players[playerid] = {
             lane: player.lane,
+            name: playerid,
             batteries: {},
             numBatteries: 0,
             progress: 0,
@@ -198,24 +216,29 @@ export default {
       
       for (const player of Object.values(this.game.players)) {
         // Set each player's x position
-        player.sprite.x = player.progress * (this.config.canvasWidth / 100)
+        player.sprite.x = player.progress * ((this.config.canvasWidth - player.sprite.width) / 100)
       }
     },
     update() {
       for (const player of Object.values(this.game.players)) {
-        let progress = 0
-        let numBatteries = 0
-        for (const battery of Object.values(player.batteries)) {
-          const timeSinceUsed = ((Date.now() + this.serverTimeOffset) - battery.used) / 1000
-          if (timeSinceUsed > this.config.batteryLifeSpan) {
-            progress += this.config.batteryProgressPerSecond * this.config.batteryLifeSpan
-          } else {
-            progress += this.config.batteryProgressPerSecond * timeSinceUsed
-            numBatteries += 1
+        if (!player.finished) {
+          let progress = 0
+          let numBatteries = 0
+          for (const battery of Object.values(player.batteries)) {
+            const timeSinceUsed = ((Date.now() + this.serverTimeOffset) - battery.used) / 1000
+            if (timeSinceUsed > this.config.batteryLifeSpan) {
+              progress += this.config.batteryProgressPerSecond * this.config.batteryLifeSpan
+            } else {
+              progress += this.config.batteryProgressPerSecond * timeSinceUsed
+              numBatteries += 1
+            }
           }
+          if (progress === 100) {
+            this.submitFinish({ raceId: this.raceRef.key })
+          }
+          player.progress = progress
+          player.numBatteries = numBatteries
         }
-        player.progress = (!player.finished) ? progress : 100
-        player.numBatteries = numBatteries
       }
       // Set this user's fuel and speed
       this.game.numBatteries = this.game.players[this.user.uid].numBatteries
@@ -223,6 +246,10 @@ export default {
     updatePlayer(snap, playerid) {
       this.game.players[playerid].batteries = snap.val().batteries
       this.game.players[playerid].finished = snap.val().finished
+      
+      if (snap.val().finished) {
+        this.game.players[playerid].progress = 100
+      }
     },
     updateWaitingRoom(room) {
       if (room !== null) this.game.questionValue = Object.keys(room).length.toString() + ' player(s)'
@@ -273,12 +300,15 @@ export default {
 
 <style scoped>
 #game {
+  float: right;
   padding: 10px;
   width: 720px;
   margin: auto;
   border: 1px solid gray;
   border-radius: 4px;
 }
+
+/* UI */
 #ui {
   height: 100px;
   width: 700px;
@@ -299,5 +329,46 @@ export default {
 }
 .fuel-low {
   color: red;
+}
+
+/* Player labels */
+/* Bubble design by https://leaverou.github.io/bubbly/ */
+
+#player-labels {
+  float: left;
+  height: 450px;
+}
+
+.speech-bubble {
+  position: absolute;
+  border-radius: .4em;
+  margin-right: 2px;
+}
+
+.bubble-default {
+  background: #676088;
+}
+
+.bubble-player {
+  background: #c7c400;
+}
+
+.speech-bubble h1 {
+  color: white;
+  margin: 5px;
+}
+
+.speech-bubble:after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+  border-left-color: #676088;
+  border-right: 0;
+  margin-top: -5px;
+  margin-right: -5px;
 }
 </style>

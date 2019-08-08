@@ -32,6 +32,10 @@ exports.submitProblemSolution = (data, ctx) => {
     })
 }
 
+exports.submitFinish = (data, ctx) => {
+  // Validate finish and return position
+}
+
 exports.exitRace = (data, ctx) => {
   admin.database().ref('user/' + ctx.auth.uid + '/assignedRace').remove()
   
