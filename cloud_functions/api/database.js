@@ -7,7 +7,6 @@ exports.convertWRtoGame = (snap, ctx) => {
     if (wrsnap.numChildren() == cfg.playersToStartRace) {
       // Create new game ref
       const raceRef = admin.database().ref('race').push()
-      raceRef.child('started').set(false)
       
       let lane = 1
       wrsnap.forEach((player) => {
@@ -22,11 +21,11 @@ exports.convertWRtoGame = (snap, ctx) => {
           })
           
           userSnap.child('assignedRace').ref.set(raceRef.key)
+          
+          player.ref.remove()
+        
+          lane ++
         })
-        
-        player.ref.remove()
-        
-        lane ++
       })
       // Generate math problems
       const problems = {}

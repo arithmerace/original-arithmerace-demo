@@ -169,6 +169,7 @@ export default {
       this.raceRef.child('player').once('value', (snap) => {
         // Create player objects
         for (const [playerid, player] of Object.entries(snap.val())) {
+          console.log(`Lane is ${player.lane}`)
           this.game.players[playerid] = {
             lane: player.lane,
             name: player.name,
