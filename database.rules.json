@@ -19,9 +19,9 @@
         ".indexOn": ["profile"],
         ".read": true,
         "profile": {
+          ".write": "auth.uid === $uid",
           ".indexOn": ["username"],
           "username": {
-            ".write": "auth.uid === $uid",
             ".validate": "newData.isString() && newData.val().length <= 16"
           }
         }

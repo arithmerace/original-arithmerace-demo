@@ -13,14 +13,15 @@
           />
         </b-field>
         <b-field label="Email">
-          <p>If you don't have your own email, ask a parent or guardian if you can use theirs.</p>
           <b-input v-model="form.email" required type="email" placeholder="Your email address" />
         </b-field>
         <b-field label="Password">
-          <b-input v-model="form.password" required type="password" minlength="8" placeholder="Choose a password" />
+          <b-input v-model="form.password" required type="password" minlength="6" placeholder="Choose a password" />
         </b-field>
-        <b-button native-type="submit" :disabled="submitDisabled" type="is-primary" @click="signup"></b-button>
+        <b-button native-type="submit" :disabled="submitDisabled" type="is-primary" @click="signup">Create account</b-button>
       </form>
+      <br />
+      <p>Already have an account? <n-link to='/login'>Login.</n-link></p>
     </div>
   </section>
 </template>
@@ -49,25 +50,31 @@ export default {
         }).then(() => {
           this.$toast.open('Your account was successfully created.')
           this.$router.push('/')
-        }).catch(() => {
-          
+        }).catch((err) => {
+          this.$disp_error('createProfile: ' + err, this)
+          this.submitDisabled = false
         })
       }).catch((err) => {
         if (err.code === 'auth/weak-password') {
           this.$snackbar.open({
-            duration: 3000,
-            message: 'Sorry, that password is too weak. Please make it stronger.'
-            this.form.password = ''
+            duration: 30000,
+            message: 'Sorry, that password is too weak. It must be longer than 6 characters.'
           })
+          this.form.password = ''
         } else if (err.code === 'auth/invalid-email') {
           this.$snackbar.open({
-            duration: 3000,
+            duration: 30000,
             message: 'Please enter a valid email.'
-            this.form.email = ''
+          })
+          this.form.email = ''
+        } else if (err.code === 'auth/email-already-in-use') {
+          this.$snackbar.open({
+            duration: 30000,
+            message: 'An account was already created with that email. Please visit the FAQ for more info.'
           })
         } else this.$disp_error('signUpemailandpassword: ' + err, this)
         this.submitDisabled = false
-      }})
+      })
     }
   }
 }
