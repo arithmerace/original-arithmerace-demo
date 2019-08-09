@@ -1,18 +1,18 @@
 <template>
   <div>
-    <div id="player-labels">
-      <div
-        class="speech-bubble"
-        :class="{ 'bubble-default': playerid !== user.uid, 'bubble-player': playerid === user.uid  }"
-        :style="'top: ' + player.sprite.y"
-        v-for="(player, playerid) in game.players"
-        :key="playerid" >
-        <h1>
-          {{ player.name }}
-        </h1>
-      </div>
-    </div>
     <div id="game">
+      <div id="player-labels">
+        <div
+          v-for="(player, playerid) in game.players"
+          class="speech-bubble"
+          :class="{ 'bubble-default': playerid !== user.uid, 'bubble-player': playerid === user.uid  }"
+          :style="'top: ' + (player.lane - 1) * 80 + 'px;'"
+          :key="playerid" >
+          <h1>
+            {{ player.name }}
+          </h1>
+        </div>
+      </div>
       <div id="canvas-div">
         <canvas :width="config.canvasWidth" :height="config.canvasHeight" ref="raceCanvas" />
       </div>
@@ -171,7 +171,7 @@ export default {
         for (const [playerid, player] of Object.entries(snap.val())) {
           this.game.players[playerid] = {
             lane: player.lane,
-            name: playerid,
+            name: player.name,
             batteries: {},
             numBatteries: 0,
             progress: 0,
@@ -300,7 +300,6 @@ export default {
 
 <style scoped>
 #game {
-  float: right;
   padding: 10px;
   width: 720px;
   margin: auto;
@@ -335,12 +334,15 @@ export default {
 /* Bubble design by https://leaverou.github.io/bubbly/ */
 
 #player-labels {
+  position: relative;
   float: left;
   height: 450px;
+  background-color: green;
 }
 
 .speech-bubble {
   position: absolute;
+  right: 5px; /* position right side of bubble in div, which is floated to left side of game */
   border-radius: .4em;
   margin-right: 2px;
 }
@@ -349,7 +351,7 @@ export default {
   background: #676088;
 }
 
-.bubble-player {
+.bubble-player { /* Coloring for client player's label */
   background: #c7c400;
 }
 

@@ -12,14 +12,17 @@ exports.convertWRtoGame = (snap, ctx) => {
       let lane = 1
       wrsnap.forEach((player) => {
         // For each player in waiting room, add player data to race then remove player from waiting room
-        raceRef.child('player/' + player.key).set({
-          batteries: {},
-          finished: false,
-          currentProblem: 0,
-          lane
+        admin.database().ref('user/' + player.key).once((userSnap) => {
+          raceRef.child('player/' + player.key).set({
+            name: (userSnap.val().profile) ? userSnap.val().profile.username : 'Guest',
+            batteries: {},
+            finished: false,
+            currentProblem: 0,
+            lane
+          })
+          
+          userSnap.child('assignedRace').set(raceRef.key)
         })
-        
-        admin.database().ref('user/' + player.key).child('assignedRace').set(raceRef.key)
         
         player.ref.remove()
         

@@ -16,9 +16,14 @@
     },
     "user": {
       "$uid": {
+        ".indexOn": ["profile"],
         ".read": true,
-        "hasRaced": {
-          ".write": "auth.uid === $uid"
+        "profile": {
+          ".indexOn": ["username"],
+          "username": {
+            ".write": "auth.uid === $uid",
+            ".validate": "newData.isString() && newData.val().length <= 16"
+          }
         }
       }
     },

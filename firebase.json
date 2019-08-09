@@ -1,9 +1,6 @@
 {
   "functions": {
-    "source": "functions",
-    "predeploy": [
-      "echo 'HAVE YOU PREDEPLOYED?'"
-    ]
+    "source": "functions"
   },
   "hosting": {
     "predeploy": [
