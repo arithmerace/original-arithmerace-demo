@@ -1,8 +1,8 @@
 # Build project and copy to functions dir for SSR
 npm --prefix src run build
-rm -rf functions/nuxt
-cp -r src/.nuxt/ functions/nuxt/
-cp src/nuxt.config.js functions/
+rm -rf cloud_functions/nuxt
+cp -r src/.nuxt/ cloud_functions/nuxt/
+cp src/nuxt.config.js cloud_functions/
 
 # Move built assets into public directory for hosting
 rm -rf public/*

@@ -6,6 +6,7 @@
         <nuxt />
       </div>
     </section>
+    <Footer />
     <Connection />
   </div>
 </template>
@@ -13,11 +14,13 @@
 <script>
 import Navbar from '~/components/navbar'
 import Connection from '~/components/connection'
+import Footer from '~/components/footer'
 
 export default {
   components: {
     Connection,
-    Navbar
+    Navbar,
+    Footer
   }
 }
 </script>

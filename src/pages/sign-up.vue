@@ -1,6 +1,8 @@
 <template>
   <section class="section">
     <div class="container" width="50%">
+      <h1 class="is-size-3">Sign Up</h1>
+      <br />
       <form @submit.prevent>
         <b-field label="Username">
           <b-input

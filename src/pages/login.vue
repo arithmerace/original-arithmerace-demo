@@ -1,6 +1,8 @@
 <template>
   <section class="section">
     <div class="container" width="50%">
+      <h1 class="is-size-3">Login</h1>
+      <br />
       <form @submit.prevent>
         <!--<b-field label="Username">-->
         <!--  <b-input-->
@@ -17,6 +19,9 @@
         </b-field>
         <b-field label="Password">
           <b-input v-model="form.password" required type="password" placeholder="Enter your password" />
+        </b-field>
+        <b-field>
+          <b-checkbox v-model="form.remember">Stay signed in</b-checkbox>
         </b-field>
         <b-button native-type="submit" :disabled="submitDisabled" type="is-primary" @click="login">Login</b-button>
       </form>
@@ -38,38 +43,42 @@ export default {
       form: {
         username: '',
         email: '',
-        password: ''
+        password: '',
+        remember: false
       }
     }
   },
   methods: {
     login() {
       this.submitDisabled = true
-      fireAuth().signInWithEmailAndPassword(this.form.email, this.form.password).then((credential) => {
-        this.$toast.open('Signed in successfully')
-        this.$router.push('/')
-      }).catch((err) => {
-        if (err.code === 'auth/invalid-email') {
-          this.$snackbar.open({
-            duration: 30000,
-            message: 'Uh oh, looks like that\'s not a valid email!'
-          })
-          this.form.email = ''
-        } else if (err.code === 'auth/user-disabled') {
-          this.$snackbar.open({
-            duration: 30000,
-            message: 'We\'re sorry, but your account has been disabled. Please visit the FAQ to learn why this may have happened.'
-          })
-          this.form.email = ''
-          this.form.password = ''
-        } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-          this.$snackbar.open({
-            duration: 30000,
-            message: 'Wrong email or password, please try again.'
-          })
-          this.form.password = ''
-        } else this.$disp_error('signInemailandpassword: ' + err, this)
-        this.submitDisabled = false
+      const persistence = (this.form.remember) ? fireAuth.Auth.Persistence.LOCAL : fireAuth.Auth.Persistence.SESSION
+      fireAuth().setPersistence(persistence).then(() => {
+        fireAuth().signInWithEmailAndPassword(this.form.email, this.form.password).then((credential) => {
+          this.$toast.open('Signed in successfully')
+          this.$router.push('/')
+        }).catch((err) => {
+          if (err.code === 'auth/invalid-email') {
+            this.$snackbar.open({
+              duration: 30000,
+              message: 'Uh oh, looks like that\'s not a valid email!'
+            })
+            this.form.email = ''
+          } else if (err.code === 'auth/user-disabled') {
+            this.$snackbar.open({
+              duration: 30000,
+              message: 'We\'re sorry, but your account has been disabled. Please visit the FAQ to learn why this may have happened.'
+            })
+            this.form.email = ''
+            this.form.password = ''
+          } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+            this.$snackbar.open({
+              duration: 30000,
+              message: 'Wrong email or password, please try again.'
+            })
+            this.form.password = ''
+          } else this.$disp_error('signInemailandpassword: ' + err, this)
+          this.submitDisabled = false
+        })
       })
     },
     resetPassword() {

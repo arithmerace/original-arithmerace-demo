@@ -1,47 +1,24 @@
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 
-const api = require('./api/callable.js')
-const dbApi = require('./api/database.js')
+const raceApi = require('./api/race.js')
+const userApi = require('./api/user.js')
+const ssrApp = require('./SSR.js')
 
 admin.initializeApp();
 
-/* START Server-Side Renderer */
-const express = require('express')
-const { Nuxt } = require('nuxt-start')
+/* Server-Side Renderer */
+exports.ssrapp = functions.https.onRequest(ssrApp)
 
-const isProd = functions.config().env.prod
-
-const app = express()
-
-const config = {
-  dev: false,
-  debug: false,
-  buildDir: 'nuxt'
-}
-const nuxt = new Nuxt(config)
-
-function handleRequest(req, res) {
-  // res.set('Cache-Control', 'public, max-age=600, s-maxage=1200')
-  nuxt.renderRoute(req.url).then(result => {
-    res.send(result.html)
-  }).catch(e => {
-    res.send(e)
-  })
-}
-
-app.get('*', handleRequest)
-exports.ssrapp = functions.https.onRequest(app)
-/* END SSR */
-
-/* DB WATCH */
+/* Race Management and API */
 exports.convertWaitingRoomToGame = functions.database
   .ref('waitingroom/{user}')
-  .onCreate(dbApi.convertWRtoGame)
-/* END DB WATCH */
+  .onCreate(raceApi.convertWRtoGame)
+  
+exports.submitProblemSolution = functions.https.onCall(raceApi.submitProblemSolution)
+exports.submitFinish = functions.https.onCall(raceApi.submitFinish)
+exports.exitRace = functions.https.onCall(raceApi.exitRace)
 
-/* CALLABLE API */
-exports.submitProblemSolution = functions.https.onCall(api.submitProblemSolution)
-exports.submitFinish = functions.https.onCall(api.submitFinish)
-exports.exitRace = functions.https.onCall(api.exitRace)
-/* END CALLABLE API */
+/* User management */
+exports.onNewUser = functions.auth.user().onCreate(userApi.onNewUser)
+// TODO manage user status
