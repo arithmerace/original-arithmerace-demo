@@ -62,11 +62,11 @@
 </template>
 
 <script>
-import * as PIXI from 'pixi.js-legacy'
-// const PIXI = require('pixi.js-legacy')
 import { fireAuth, fireDb, fireFuncs } from '~/plugins/firebase'
-
-// import PlayerLabel from '~/components/PlayerLabel.vue'
+let PIXI = null
+if (process.client) {
+  PIXI = require('pixi.js-legacy')
+}
 
 export default {
   name: 'Race',
@@ -102,6 +102,8 @@ export default {
     }
   },
   mounted() {
+    // eslint-disable-next-line
+    if (!process.client) return
     fireAuth().onAuthStateChanged((user) => {
       if (user) {
         this.user = user

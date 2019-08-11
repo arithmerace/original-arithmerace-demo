@@ -1,6 +1,8 @@
 <template>
   <section class="section">
-    <Race />
+    <no-ssr placeholder="Loading...">
+      <Race />
+    </no-ssr>
   </section>
 </template>
 
