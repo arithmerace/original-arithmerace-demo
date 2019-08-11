@@ -25,4 +25,4 @@ function handleRequest(req, res) {
 
 app.get('*', handleRequest)
 
-export default app
+exports.app = app

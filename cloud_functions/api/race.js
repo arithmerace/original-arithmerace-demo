@@ -1,6 +1,20 @@
 const admin = require('firebase-admin')
 const cfg = require('./config.json')
 
+function generateNewProblem() {
+  const problem = {}
+  problem.op = ['+', '-', '/', '*'][Math.floor(Math.random()*4)]
+  problem.n1 = Math.floor(Math.random()*12)
+  problem.n2 = Math.floor(Math.random()*12)
+  if (problem.op === '/' && problem.n1 % problem.n2 !== 0) {
+    // For now, only allow division if there isn't a remainder
+    problem.op = '*' // do multiplication instead
+  }
+  problem.question = `${problem.n1} ${problem.op} ${problem.n2}`
+  problem.solution = eval(problem.question)
+  return problem
+}
+
 exports.convertWRtoGame = function(snap, ctx) {
   snap.ref.parent.once("value", (wrsnap, ctx) => {
     if (wrsnap.numChildren() == cfg.playersToStartRace) {
@@ -27,20 +41,7 @@ exports.convertWRtoGame = function(snap, ctx) {
         })
       })
       // Generate math problems
-      const problems = {}
-      for (i=0; i<cfg.numProblemsPerRace; i++) {
-        const problem = {}
-        problem.op = ['+', '-', '/', '*'][Math.floor(Math.random()*4)]
-        problem.n1 = Math.floor(Math.random()*12)
-        problem.n2 = Math.floor(Math.random()*12)
-        if (problem.op === '/' && problem.n1 % problem.n2 !== 0) {
-          // For now, only allow division if there isn't a remainder
-          problem.op = '*' // do multiplication instead
-        }
-        problem.question = `${problem.n1} ${problem.op} ${problem.n2}`
-        problem.solution = eval(problem.question)
-        problems[i] = problem
-      }
+      const problems = [generateNewProblem()]
       // the '_race' ref is used for hidden race data
       admin.database().ref('_race/' + raceRef.key).child('problems').set(problems)
       setTimeout(() => {
@@ -63,16 +64,22 @@ exports.submitProblemSolution = function(data, ctx) {
   
       return admin.database().ref('race/' + data.raceId + '/player/' + ctx.auth.uid).once('value')
         .then((playerSnap) => {
+          if (!playerSnap.val()) {
+            console.warn(`Player ${ctx.auth.uid} not in race ${data.raceId}`)
+            return
+          }
+          
           const result = { correct: false, serverTime: Date.now() }
           // Compare user solution to actual solution
           if (data.solution === problems[playerSnap.val().currentProblem].solution.toString()) {
             result.correct = true
             // Set next problem
-            const nextProblem = problems[playerSnap.val().currentProblem + 1]
+            let nextProblem = problems[playerSnap.val().currentProblem + 1]
+            // If there are no more problems, create a new one.
             if (nextProblem === undefined) {
-              result.finished = true
-              playerSnap.child('finished').ref.set(true)
-              return result
+              nextProblem = generateNewProblem()
+              problemsSnap.ref.child(playerSnap.val().currentProblem + 1).set(nextProblem)
+              
             }
             result.nextProblem = nextProblem.question
             playerSnap.child('currentProblem').ref.set(playerSnap.val().currentProblem + 1)
@@ -88,7 +95,33 @@ exports.submitProblemSolution = function(data, ctx) {
 }
 
 exports.submitFinish = function(data, ctx) {
-  // TODO Validate finish and return position
+  return admin.database().ref('race/' + data.raceId + '/player/' + ctx.auth.uid).once('value')
+    .then((playerSnap) => {
+      if (!playerSnap.val()) {
+        console.warn(`Player ${ctx.auth.uid} not in race ${data.raceId}`)
+        return { success: false }
+      }
+      
+      // Verify that player is finished
+      let progress = 0
+      for (const battery of Object.values(playerSnap.val().batteries)) {
+        const timeSinceUsed = ((Date.now()) - battery.used) / 1000
+        if (timeSinceUsed > cfg.batteryLifeSpan) {
+          progress += cfg.batteryProgressPerSecond * cfg.batteryLifeSpan
+        } else {
+          progress += cfg.batteryProgressPerSecond * timeSinceUsed
+        }
+      }
+      
+      if (progress >= cfg.completionProgressThreshold) {
+        playerSnap.child('finished').ref.set(true)
+        
+        return { success: true }
+      }
+      
+      return { success: false }
+      
+    })
 }
 
 exports.exitRace = function(data, ctx) {

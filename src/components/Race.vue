@@ -234,15 +234,16 @@ export default {
               numBatteries += 1
             }
           }
-          if (progress === 100) {
-            this.submitFinish({ raceId: this.raceRef.key })
-          }
           player.progress = progress
           player.numBatteries = numBatteries
         }
       }
       // Set this user's fuel and speed
       this.game.numBatteries = this.game.players[this.user.uid].numBatteries
+      // Submit finish if
+      if (this.game.players[this.user.uid].progress >= 100 && !this.game.players[this.user.uid].finished) {
+        this.handleFinishRace()
+      }
     },
     updatePlayer(snap, playerid) {
       this.game.players[playerid].batteries = snap.val().batteries
@@ -263,12 +264,7 @@ export default {
         solution: this.game.userSolution,
         raceId: this.raceRef.key
       }).then((result) => {
-        console.warn(`Client time is ${Date.now()}, server time is ${result.data.serverTime}, client time plus serverTimeOffset is ${Date.now() + this.serverTimeOffset}`)
-        if (result.data.finished) {
-          this.game.questionLabel = 'finished'
-          this.game.questionValue = 'early'
-          this.$toast.open('Good job, you finished all the problems!')
-        } else if (result.data.correct) {
+        if (result.data.correct) {
           this.game.questionValue = result.data.nextProblem
           this.game.solutionFieldType = 'is-success'
           setTimeout(() => {
@@ -288,12 +284,23 @@ export default {
             queue: false
           })
           setTimeout(() => {
+            this.game.userSolution = ''
             this.game.solutionInputDisabled = false
             this.$refs.solutionInput.focus()
             this.game.solutionFieldType = null
           }, 500)
         }
       }).catch(err => this.$disp_error('submitSolution:' + err.message, this))
+    },
+    handleFinishRace() {
+      this.submitFinish({ raceId: this.raceRef.key }).then((result) => {
+        if (result.data.success) {
+          this.$toast.open('You finished the race.')
+          this.game.players[this.user.uid].finished = true
+        } else {
+          this.$toast.open('ERROR: due to an internal error, you were unable to finish the race.')
+        }
+      }).catch(err => this.$disp_error('submitFinish: ' + err, this))
     }
   }
 }

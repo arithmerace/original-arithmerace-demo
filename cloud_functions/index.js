@@ -8,7 +8,7 @@ const ssrApp = require('./SSR.js')
 admin.initializeApp();
 
 /* Server-Side Renderer */
-exports.ssrapp = functions.https.onRequest(ssrApp)
+exports.ssrapp = functions.https.onRequest(ssrApp.app)
 
 /* Race Management and API */
 exports.convertWaitingRoomToGame = functions.database
@@ -21,4 +21,3 @@ exports.exitRace = functions.https.onCall(raceApi.exitRace)
 
 /* User management */
 exports.onNewUser = functions.auth.user().onCreate(userApi.onNewUser)
-// TODO manage user status

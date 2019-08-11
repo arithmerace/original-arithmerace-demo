@@ -4,5 +4,6 @@
 
   "playersToStartRace": 2,
   "raceStartDelay": 10000,
-  "numProblemsPerRace": 12
+  "numProblemsPerRace": 12,
+  "completionProgressThreshold": 99
 }
