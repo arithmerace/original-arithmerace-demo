@@ -20,6 +20,9 @@
         <b-field label="Password">
           <b-input v-model="form.password" required type="password" minlength="6" placeholder="Choose a password" />
         </b-field>
+        <b-field>
+          <b-checkbox v-model="form.agree">I agree to the <n-link to='/site/terms-and-privacy'>terms and privacy policy</n-link>.</b-checkbox>
+        </b-field>
         <b-button native-type="submit" :disabled="submitDisabled" type="is-primary" @click="signup">Create account</b-button>
       </form>
       <br />
@@ -39,12 +42,22 @@ export default {
       form: {
         username: '',
         email: '',
-        password: ''
+        password: '',
+        agree: false
       }
     }
   },
   methods: {
     signup() {
+      if (!this.form.agree) {
+        this.$toast.open({
+          duration: 6000,
+          message: 'You must agree to the terms and privacy in order to create an account',
+          queue: false
+        })
+        return
+      }
+      
       this.submitDisabled = true
       fireAuth().createUserWithEmailAndPassword(this.form.email, this.form.password).then((credential) => {
         fireDb().ref('user/' + credential.user.uid + '/profile').set({

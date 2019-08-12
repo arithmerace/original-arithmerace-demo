@@ -86,7 +86,8 @@ export default {
         // Client-only config
         canvasHeight: 450,
         canvasWidth: 700,
-        forceCanvas: true
+        forceCanvas: true,
+        playerAnimationSpeed: 11
       },
       game: {
         started: false,
@@ -104,6 +105,7 @@ export default {
   mounted() {
     // eslint-disable-next-line
     if (!process.client) return
+    
     fireAuth().onAuthStateChanged((user) => {
       if (user) {
         this.user = user
@@ -162,7 +164,7 @@ export default {
       })
     },
     initRace() {
-      this.$toast.open('Race starting soon')
+      this.$toast.open({ message: 'Race starting soon', queue: false })
       document.title = 'RACE STARTING SOON'
       this.game.questionLabel = 'Problem:'
       this.game.questionValue = 'wait...'
@@ -171,7 +173,6 @@ export default {
       this.raceRef.child('player').once('value', (snap) => {
         // Create player objects
         for (const [playerid, player] of Object.entries(snap.val())) {
-          console.log(`Lane is ${player.lane}`)
           this.game.players[playerid] = {
             lane: player.lane,
             name: player.name,
@@ -179,17 +180,35 @@ export default {
             numBatteries: 0,
             progress: 0,
             finished: false,
-            sprite: new PIXI.Graphics()
+            sprite: new PIXI.Graphics() // placeholder sprite
               .beginFill(0xd4a933)
               .drawRect(0, (player.lane - 1) * 80, 50, 50)
               .endFill()
           }
-          
-          // Add player sprite to stage
           this.app.stage.addChild(this.game.players[playerid].sprite)
+          
+          // Add player robot to loader queue
+          console.log()
+          
+          this.app.loader.add({
+            url: '/robotsprites/' + player.robot + '.json',
+            name: 'robot' + playerid
+          }, () => {
+            // Callback called when player robot loaded
+            const playerSpriteSheet = this.app.loader.resources['robot' + playerid].spritesheet
+            console.log(playerSpriteSheet.data)
+            console.log(playerSpriteSheet.animations)
+            const playerSprite = new PIXI.AnimatedSprite(playerSpriteSheet.animations[player.robot])
+            playerSprite.animationSpeed = this.confg.playerAnimationSpeed
+            
+            this.game.players[playerid].sprite = playerSprite
+          })
         }
         
-        // Start graphics loop (60 fps)
+        // Start loading of resources
+        this.app.loader.load()
+        
+        // Start loop
         this.app.ticker.add(delta => this.main(delta))
 
         // Start clock skew listener
@@ -200,19 +219,25 @@ export default {
         // firstProblem will appear when race is started. Start race:
         this.raceRef.child('firstProblem').on('value', (snap) => {
           if (snap.val()) {
-            document.title = 'Arithmerace'
-            this.$toast.open('Race starting!')
-            this.game.questionValue = snap.val()
-            this.game.solutionInputDisabled = false
-            this.$refs.solutionInput.focus()
-            for (const playerid of Object.keys(this.game.players)) {
-              // Start player update listener
-              this.raceRef.child('player/' + playerid).on('value', snap => this.updatePlayer(snap, playerid))
-            }
-            this.game.started = true
+            this.startRace(snap.val())
           }
         })
       })
+    },
+    startRace(firstProb) {
+      document.title = 'Arithmerace'
+      this.$toast.open({ message: 'Race starting!', queue: false })
+      this.game.questionValue = firstProb
+      this.game.solutionInputDisabled = false
+      this.$refs.solutionInput.focus()
+      for (const [playerid, player] of Object.entries(this.game.players)) {
+        // Start player update listener
+        this.raceRef.child('player/' + playerid).on('value', snap => this.updatePlayer(snap, playerid))
+        
+        // Start player animation
+        player.sprite.play()
+      }
+      this.game.started = true
     },
     main(delta) {
       if (this.game.started) this.update()
@@ -240,8 +265,8 @@ export default {
           player.numBatteries = numBatteries
         }
       }
-      // Set this user's fuel and speed
-      this.game.numBatteries = this.game.players[this.user.uid].numBatteries
+      // Set this user's number of batteries, increase by one for asthetic purposes
+      this.game.numBatteries = this.game.players[this.user.uid].numBatteries + 1
       // Submit finish if
       if (this.game.players[this.user.uid].progress >= 100 && !this.game.players[this.user.uid].finished) {
         this.handleFinishRace()
