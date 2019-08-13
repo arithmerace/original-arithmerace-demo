@@ -87,7 +87,8 @@ export default {
         canvasHeight: 450,
         canvasWidth: 700,
         forceCanvas: true,
-        playerAnimationSpeed: 11
+        canvasBackgroundColor: 0xffffff,
+        playerAnimationSpeed: 0.18 // Frames per application frame
       },
       game: {
         started: false,
@@ -137,7 +138,7 @@ export default {
         width: this.config.canvasWidth,
         height: this.config.canvasHeight,
         view: this.$refs.raceCanvas,
-        backgroundColor: 0xa1a1a1,
+        backgroundColor: this.config.canvasBackgroundColor,
         forceCanvas: this.config.forceCanvas
       })
       
@@ -179,29 +180,28 @@ export default {
             batteries: {},
             numBatteries: 0,
             progress: 0,
-            finished: false,
-            sprite: new PIXI.Graphics() // placeholder sprite
-              .beginFill(0xd4a933)
-              .drawRect(0, (player.lane - 1) * 80, 50, 50)
-              .endFill()
+            finished: false
+            // sprite: new PIXI.Graphics() // placeholder sprite
+            //   .beginFill(0xd4a933)
+            //   .drawRect(0, (player.lane - 1) * 80, 50, 50)
+            //   .endFill()
           }
-          this.app.stage.addChild(this.game.players[playerid].sprite)
           
           // Add player robot to loader queue
           console.log()
           
           this.app.loader.add({
-            url: '/robotsprites/' + player.robot + '.json',
+            url: '/robotassets/' + player.robot + '/spritesheet.json',
             name: 'robot' + playerid
           }, () => {
             // Callback called when player robot loaded
             const playerSpriteSheet = this.app.loader.resources['robot' + playerid].spritesheet
-            console.log(playerSpriteSheet.data)
-            console.log(playerSpriteSheet.animations)
             const playerSprite = new PIXI.AnimatedSprite(playerSpriteSheet.animations[player.robot])
-            playerSprite.animationSpeed = this.confg.playerAnimationSpeed
+            playerSprite.animationSpeed = this.config.playerAnimationSpeed
+            playerSprite.y = (player.lane - 1) * 80
             
             this.game.players[playerid].sprite = playerSprite
+            this.app.stage.addChild(this.game.players[playerid].sprite)
           })
         }
         
@@ -244,7 +244,7 @@ export default {
       
       for (const player of Object.values(this.game.players)) {
         // Set each player's x position
-        player.sprite.x = player.progress * ((this.config.canvasWidth - player.sprite.width) / 100)
+        if (player.sprite) player.sprite.x = Math.floor(player.progress * ((this.config.canvasWidth - player.sprite.width) / 100))
       }
     },
     update() {
