@@ -6,7 +6,7 @@
           v-for="(player, playerid) in game.players"
           class="speech-bubble"
           :class="{ 'bubble-default': playerid !== user.uid, 'bubble-player': playerid === user.uid  }"
-          :style="'top: ' + (player.lane - 1) * 80 + 'px;'"
+          :style="'top: ' + (player.lane - 1) * (config.trackHeight + config.stripeHeight) + 'px;'"
           :key="playerid" >
           <h1>
             {{ player.name }}
@@ -88,17 +88,28 @@ export default {
         canvasWidth: 700,
         forceCanvas: true,
         canvasBackgroundColor: 0xffffff,
-        playerAnimationSpeed: 0.18 // Frames per application frame
+        numTracks: 5,
+        trackHeight: 80,
+        stripeWidth: 35, // canvasWidth should be a multiple of this
+        stripeHeight: 5,
+        stripeColor: 0xff0000,
+        stripeMovementRate: 10,
+        playerAnimationSpeed: 0.2 // Frames per application frame
       },
       game: {
         started: false,
         position: '-',
         numBatteries: 0,
+        waitingRoomText: null,
         questionValue: '',
         questionLabel: 'In waiting room',
         userSolution: '',
         solutionInputDisabled: true,
         solutionFieldType: null,
+        finishSubmitted: false,
+        track: {
+          stripes: []
+        },
         players: {}
       }
     }
@@ -142,6 +153,10 @@ export default {
         forceCanvas: this.config.forceCanvas
       })
       
+      this.game.waitingRoomText = new PIXI.Text('Joining Waiting Room')
+      this.game.waitingRoomText.position.set(200, 300)
+      this.app.stage.addChild(this.game.waitingRoomText)
+      
       // Add user to waiting room
       const waitingRoomRef = fireDb().ref('waitingroom/' + this.user.uid)
       
@@ -153,13 +168,18 @@ export default {
       // Update waiting room data
       const WRref = fireDb().ref('waitingroom')
       WRref.on('value', (snap) => {
-        this.updateWaitingRoom(snap.val())
+        let text = '0 players'
+        if (snap.val() !== null) text = Object.keys(snap.val()).length.toString() + ' player(s)'
+        
+        this.game.waitingRoomText.text = text + ' in waiting room'
+        this.game.questionValue = text
       })
       
       // When a race is assigned, initialize the game
       fireDb().ref('user/' + this.user.uid + '/assignedRace').on('value', (snap) => {
         if (snap.val() != null) {
           this.raceRef = fireDb().ref('race/' + snap.val())
+          WRref.off()
           this.initRace()
         }
       })
@@ -172,6 +192,8 @@ export default {
       
       // Fetch player data
       this.raceRef.child('player').once('value', (snap) => {
+        this.game.waitingRoomText.text = ''
+        
         // Create player objects
         for (const [playerid, player] of Object.entries(snap.val())) {
           this.game.players[playerid] = {
@@ -181,15 +203,9 @@ export default {
             numBatteries: 0,
             progress: 0,
             finished: false
-            // sprite: new PIXI.Graphics() // placeholder sprite
-            //   .beginFill(0xd4a933)
-            //   .drawRect(0, (player.lane - 1) * 80, 50, 50)
-            //   .endFill()
           }
           
-          // Add player robot to loader queue
-          console.log()
-          
+          // Add player's robot to loader queue
           this.app.loader.add({
             url: '/robotassets/' + player.robot + '/spritesheet.json',
             name: 'robot' + playerid
@@ -198,11 +214,29 @@ export default {
             const playerSpriteSheet = this.app.loader.resources['robot' + playerid].spritesheet
             const playerSprite = new PIXI.AnimatedSprite(playerSpriteSheet.animations[player.robot])
             playerSprite.animationSpeed = this.config.playerAnimationSpeed
-            playerSprite.y = (player.lane - 1) * 80
+            playerSprite.y = (player.lane - 1) * (this.config.trackHeight + this.config.stripeHeight)
             
             this.game.players[playerid].sprite = playerSprite
             this.app.stage.addChild(this.game.players[playerid].sprite)
           })
+        }
+        
+        // Create race track stripes
+        const numStripesPerTrack = this.config.canvasWidth / this.config.stripeWidth / 2
+        for (let tracki = 1; tracki <= this.config.numTracks; tracki++) {
+          for (let stripei = 0; stripei < numStripesPerTrack; stripei++) {
+            const x = this.config.stripeWidth * 2 * stripei
+            const y = (this.config.trackHeight + this.config.stripeHeight) * tracki - this.config.stripeHeight
+            const stripe = new PIXI.Graphics()
+              .beginFill(this.config.stripeColor)
+              .drawRect(0, 0, this.config.stripeWidth, this.config.stripeHeight)
+              .endFill()
+              
+            stripe.position.set(x, y)
+            
+            this.game.track.stripes.push(stripe)
+            this.app.stage.addChild(this.game.track.stripes[this.game.track.stripes.length - 1])
+          }
         }
         
         // Start loading of resources
@@ -240,14 +274,27 @@ export default {
       this.game.started = true
     },
     main(delta) {
-      if (this.game.started) this.update()
-      
-      for (const player of Object.values(this.game.players)) {
-        // Set each player's x position
-        if (player.sprite) player.sprite.x = Math.floor(player.progress * ((this.config.canvasWidth - player.sprite.width) / 100))
+      if (this.game.started) {
+        this.update()
+        
+        // Update stripe positions
+        for (const stripe of this.game.track.stripes) {
+          stripe.x -= this.config.stripeMovementRate + delta
+          // Move stripe back to right side of canvas if it has exited the left.
+          if (stripe.x <= -this.config.stripeWidth) {
+            stripe.x = this.config.canvasWidth - (-this.config.stripeWidth - stripe.x)
+          }
+        }
+        
+        // Update player positions
+        for (const player of Object.values(this.game.players)) {
+          // Set each player's x position
+          if (player.sprite) player.sprite.x = Math.floor(player.progress * ((this.config.canvasWidth - player.sprite.width) / 100))
+        }
       }
     },
     update() {
+      // Update player data
       for (const player of Object.values(this.game.players)) {
         if (!player.finished) {
           let progress = 0
@@ -265,24 +312,19 @@ export default {
           player.numBatteries = numBatteries
         }
       }
-      // Set this user's number of batteries, increase by one for asthetic purposes
+      // Set this user's number of batteries, increase by one for asthetic reasons
       this.game.numBatteries = this.game.players[this.user.uid].numBatteries + 1
-      // Submit finish if
-      if (this.game.players[this.user.uid].progress >= 100 && !this.game.players[this.user.uid].finished) {
-        this.handleFinishRace()
-      }
+      // Submit finish
+      if (this.game.players[this.user.uid].progress >= 100) this.handleFinishRace()
     },
     updatePlayer(snap, playerid) {
+      // update player data from database
       this.game.players[playerid].batteries = snap.val().batteries
       this.game.players[playerid].finished = snap.val().finished
       
       if (snap.val().finished) {
         this.game.players[playerid].progress = 100
       }
-    },
-    updateWaitingRoom(room) {
-      if (room !== null) this.game.questionValue = Object.keys(room).length.toString() + ' player(s)'
-      else this.game.questionValue = '0 players'
     },
     handleSolution() {
       this.game.solutionInputDisabled = true
@@ -320,14 +362,17 @@ export default {
       }).catch(err => this.$disp_error('submitSolution:' + err.message, this))
     },
     handleFinishRace() {
-      this.submitFinish({ raceId: this.raceRef.key }).then((result) => {
-        if (result.data.success) {
-          this.$toast.open('You finished the race.')
-          this.game.players[this.user.uid].finished = true
-        } else {
-          this.$toast.open('ERROR: due to an internal error, you were unable to finish the race.')
-        }
-      }).catch(err => this.$disp_error('submitFinish: ' + err, this))
+      if (!this.game.finishSubmitted) {
+        this.submitFinish({ raceId: this.raceRef.key }).then((result) => {
+          if (result.data.success) {
+            this.$toast.open('You finished the race.')
+            this.game.players[this.user.uid].finished = true
+          } else {
+            this.$toast.open('ERROR: due to an internal error, you were unable to finish the race.')
+          }
+        }).catch(err => this.$disp_error('You were unable to finish the race, due to an error: submitFinish: ' + err, this))
+        this.game.finishSubmitted = true
+      }
     }
   }
 }
