@@ -29,7 +29,8 @@ module.exports = {
   */
   plugins: [
     '~/plugins/firebase.js',
-    '~/plugins/error_inject.client.js'
+    '~/plugins/error_inject.client.js',
+    '~/plugins/utilFuncs.js'
   ],
   /*
   ** Nuxt.js modules
