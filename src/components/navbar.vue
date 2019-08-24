@@ -31,17 +31,19 @@
         <template v-if="user && !user.isAnonymous">
           <div class="navbar-item">
             <b-dropdown aria-role="menu" position="is-bottom-left">
-              <button class="button is-light" slot="trigger">
+              <button slot="trigger" class="button is-light">
                 <span>Me</span>
-                <b-icon icon="menu-down"></b-icon>
+                <b-icon icon="menu-down" />
               </button>
               
-              <b-dropdown-item v-for="(i, index) in accountMenuItems" aria-role="menu-item" :key="index">
+              <b-dropdown-item v-for="(i, index) in accountMenuItems" :key="index" aria-role="menu-item">
                 <n-link :to="i.to">
                   {{ i.name }}
                 </n-link>
               </b-dropdown-item>
-              <b-dropdown-item aria-role="menu-item" @click="logout"><a>Sign out</a></b-dropdown-item>
+              <b-dropdown-item aria-role="menu-item" @click="logout">
+                <a>Sign out</a>
+              </b-dropdown-item>
             </b-dropdown>
           </div>
         </template>

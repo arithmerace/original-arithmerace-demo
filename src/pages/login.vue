@@ -1,8 +1,10 @@
 <template>
   <section class="section">
     <div class="container" width="50%">
-      <h1 class="is-size-3">Login</h1>
-      <br />
+      <h1 class="is-size-3">
+        Login
+      </h1>
+      <br>
       <form @submit.prevent>
         <!--<b-field label="Username">-->
         <!--  <b-input-->
@@ -21,13 +23,21 @@
           <b-input v-model="form.password" required type="password" placeholder="Enter your password" />
         </b-field>
         <b-field>
-          <b-checkbox v-model="form.remember">Stay signed in</b-checkbox>
+          <b-checkbox v-model="form.remember">
+            Stay signed in
+          </b-checkbox>
         </b-field>
-        <b-button native-type="submit" :disabled="submitDisabled" type="is-primary" @click="login">Login</b-button>
+        <b-button native-type="submit" :disabled="submitDisabled" type="is-primary" @click="login">
+          Login
+        </b-button>
       </form>
-      <br />
+      <br>
       <p>Forgot your password? <a @click="resetPassword">Reset it.</a></p>
-      <p>Don't have an account? <n-link to='/sign-up'>Create one.</n-link></p>
+      <p>
+        Don't have an account? <n-link to="/sign-up">
+          Create one.
+        </n-link>
+      </p>
     </div>
   </section>
 </template>

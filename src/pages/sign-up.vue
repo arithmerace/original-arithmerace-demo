@@ -1,8 +1,10 @@
 <template>
   <section class="section">
     <div class="container" width="50%">
-      <h1 class="is-size-3">Sign Up</h1>
-      <br />
+      <h1 class="is-size-3">
+        Sign Up
+      </h1>
+      <br>
       <form @submit.prevent>
         <b-field label="Username">
           <b-input
@@ -21,12 +23,24 @@
           <b-input v-model="form.password" required type="password" minlength="6" placeholder="Choose a password" />
         </b-field>
         <b-field>
-          <b-checkbox v-model="form.agree">I agree to the <n-link to='/site/terms-and-privacy'>terms and privacy policy</n-link>.</b-checkbox>
+          <b-checkbox v-model="form.agree">
+            I agree to the
+            <n-link to="/site/terms-and-privacy">
+              terms and privacy policy
+            </n-link>
+            .
+          </b-checkbox>
         </b-field>
-        <b-button native-type="submit" :disabled="submitDisabled" type="is-primary" @click="signup">Create account</b-button>
+        <b-button native-type="submit" :disabled="submitDisabled" type="is-primary" @click="signup">
+          Create account
+        </b-button>
       </form>
-      <br />
-      <p>Already have an account? <n-link to='/login'>Login.</n-link></p>
+      <br>
+      <p>
+        Already have an account? <n-link to="/login">
+          Login.
+        </n-link>
+      </p>
     </div>
   </section>
 </template>

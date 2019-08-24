@@ -4,42 +4,52 @@
       <div id="player-labels">
         <div
           v-for="(player, playerid) in game.players"
+          :key="playerid"
           class="speech-bubble"
-          :class="{ 'bubble-default': playerid !== user.uid, 'bubble-player': playerid === user.uid  }"
+          :class="{ 'bubble-default': playerid !== user.uid, 'bubble-player': playerid === user.uid }"
           :style="'top: ' + (player.lane - 1) * (config.trackHeight + config.stripeHeight) + 'px;'"
-          :key="playerid" >
+        >
           <h1>
             {{ player.name }}
           </h1>
         </div>
       </div>
       <div id="canvas-div">
-        <canvas :width="config.canvasWidth" :height="config.canvasHeight" ref="raceCanvas" />
+        <canvas ref="raceCanvas" :width="config.canvasWidth" :height="config.canvasHeight" />
       </div>
       <div id="ui" class="columns">
         <div class="columns column">
           <div class="column">
-            <div class="ui-label">Batteries</div>
+            <div class="ui-label">
+              Batteries
+            </div>
             <div
               class="ui-value"
-              :class="{ 'fuel-full': game.numBatteries >= 4, 'fuel-medium': game.numBatteries >= 2 && game.numBatteries < 4, 'fuel-low': game.numBatteries < 2 }" >
+              :class="{ 'fuel-full': game.numBatteries >= 4, 'fuel-medium': game.numBatteries >= 2 && game.numBatteries < 4, 'fuel-low': game.numBatteries < 2 }"
+            >
               {{ game.numBatteries }}
             </div>
           </div>
         </div>
         <div class="column">
-          <div class="ui-label">{{ game.questionLabel }}</div>
-          <div class="ui-value">{{ game.questionValue }}</div>
+          <div class="ui-label">
+            {{ game.questionLabel }}
+          </div>
+          <div class="ui-value">
+            {{ game.questionValue }}
+          </div>
         </div>
         <div class="column" @keyup.enter="handleSolution">
-          <div class="ui-label">Your solution</div>
+          <div class="ui-label">
+            Your solution
+          </div>
           <b-field :type="game.solutionFieldType">
             <b-input
-              placeholder="Enter a number"
+              ref="solutionInput"
               v-model="game.userSolution"
+              placeholder="Enter a number"
               type="number"
               :disabled="game.solutionInputDisabled"
-              ref="solutionInput"
             />
             <b-button :disabled="game.solutionInputDisabled" type="is-primary" @click="handleSolution">
               <b-icon icon="arrow-right" />
@@ -48,8 +58,12 @@
         </div>
         <div class="columns column">
           <div class="column">
-            <div class="ui-label">Position</div>
-            <div class="ui-value">{{ game.position }}</div>
+            <div class="ui-label">
+              Position
+            </div>
+            <div class="ui-value">
+              {{ game.position }}
+            </div>
           </div>
           <!--<div class="column">-->
           <!--  <div class="ui-label">Accuracy</div>-->
@@ -367,6 +381,8 @@ export default {
           if (result.data.success) {
             this.$toast.open('You finished the race.')
             this.game.players[this.user.uid].finished = true
+            this.game.solutionInputDisabled = true
+            this.game.questionLabel = 'Finished'
           } else {
             this.$toast.open('ERROR: due to an internal error, you were unable to finish the race.')
           }

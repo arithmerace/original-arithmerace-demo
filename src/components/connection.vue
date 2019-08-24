@@ -1,7 +1,5 @@
 <template>
-<div>
-  
-</div>
+  <div />
 </template>
 
 <script>
@@ -11,8 +9,6 @@ export default {
   name: 'Connection',
   data() {
     return {
-      wasConnected: false,
-      wasOnRacePage: false
     }
   },
   mounted() {
