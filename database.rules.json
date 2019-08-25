@@ -15,17 +15,24 @@
     },
     "user": {
       "$uid": {
-        ".indexOn": ["profile"],
         ".read": true,
         "profile": {
           ".write": "auth.uid === $uid",
-          ".indexOn": ["username"],
           "username": {
             ".validate": "newData.isString() && newData.val().length <= 16"
           }
+        },
+        "account": {
+          "arithmecoin": {}
         }
       }
     },
+    "username": {
+      "$uname": {
+        ".read": true,
+        
+      }
+    }
     "race": {
       "$raceid": {
         ".read": "auth.uid !== null",

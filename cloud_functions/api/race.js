@@ -15,6 +15,17 @@ function generateNewProblem() {
   return problem
 }
 
+function checkForEndOfRace(playersFinished, raceId) {
+  admin.database().ref('race/' + raceId + '/players').once('value')
+    .then((snap) => {
+      if (snap.val().length === playersFinished) { // All players have finished
+        // Delete race
+        snap.ref.parent.remove()
+        admin.database().ref('_race'+ raceId).remove()
+      }
+    })
+}
+
 exports.convertWRtoGame = function(snap, ctx) {
   snap.ref.parent.once("value", (wrsnap, ctx) => {
     if (wrsnap.numChildren() == cfg.playersToStartRace) {
@@ -30,6 +41,7 @@ exports.convertWRtoGame = function(snap, ctx) {
             robot: 'guest_bot',
             batteries: {},
             finished: false,
+            finalPosition: null,
             currentProblem: 0,
             lane
           })
@@ -116,8 +128,18 @@ exports.submitFinish = function(data, ctx) {
       
       if (progress >= cfg.completionProgressThreshold) {
         playerSnap.child('finished').ref.set(true)
+        // Increment players finished counter and send final position to player
+        return admin.database().ref('race/' + data.raceId + '/numPlayersFinished').once('value')
+          .then((numFinishedSnap) => {
+            const finalPosition = numFinishedSnap.val() + 1
+            playerSnap.child('finalPosition').ref.set(finalPosition)
+            numFinishedSnap.ref.set(finalPosition)
+            
+            checkForEndOfRace(finalPosition, data.raceId)
+            
+            return { success: true, finalPosition }
+          })
         
-        return { success: true }
       }
       
       return { success: false }

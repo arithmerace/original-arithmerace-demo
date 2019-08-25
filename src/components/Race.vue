@@ -111,7 +111,8 @@ export default {
         playerAnimationSpeed: 0.2 // Frames per application frame
       },
       game: {
-        started: false,
+        running: false,
+        finished: false,
         position: '-',
         numBatteries: 0,
         waitingRoomText: null,
@@ -285,10 +286,10 @@ export default {
         // Start player animation
         player.sprite.play()
       }
-      this.game.started = true
+      this.game.running = true
     },
     main(delta) {
-      if (this.game.started) {
+      if (this.game.running) {
         this.update()
         
         // Update stripe positions
@@ -393,10 +394,17 @@ export default {
       if (!this.game.finishSubmitted) {
         this.submitFinish({ raceId: this.raceRef.key }).then((result) => {
           if (result.data.success) {
+            this.game.running = false
             this.$toast.open('You finished the race.')
             this.game.players[this.user.uid].finished = true
             this.game.solutionInputDisabled = true
             this.game.questionLabel = 'Finished'
+            this.game.questionValue = this.$with_ordinal_suffix(result.data.finalPosition)
+            this.game.finished = true
+            
+            for (const player of Object.values(this.game.players)) {
+              player.sprite.stop()
+            }
           } else {
             this.$toast.open('ERROR: due to an internal error, you were unable to finish the race.')
           }
