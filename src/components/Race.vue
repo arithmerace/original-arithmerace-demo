@@ -327,18 +327,21 @@ export default {
         }
       }
       
+      // Find position for each player
       const playerPositionArray = Object.entries(this.game.players).sort((a, b) => {
-        return b[1].progress - a[1].progress
+        return b[1].progress - a[1].progress // Sort from greatest progress to least
       })
+      console.log(playerPositionArray)
       const playerPositions = {}
       for (const [position, playerEntry] of Object.entries(playerPositionArray)) {
-        playerPositions[playerEntry[0]] = position
+        playerPositions[playerEntry[0]] = parseInt(position) + 1 // Top should be 1, not zero.
       }
+      console.log(playerPositions)
       
       // Set this user's number of batteries, increase by one for asthetic reasons
       this.game.numBatteries = this.game.players[this.user.uid].numBatteries + 1
       // Set this user's position
-      this.game.position = playerPositions[this.user.uid] + this.$ordinal_suffix_of(playerPositions[this.user.uid])
+      this.game.position = this.$with_ordinal_suffix(playerPositions[this.user.uid])
       // Submit finish
       if (this.game.players[this.user.uid].progress >= 100) this.handleFinishRace()
     },
