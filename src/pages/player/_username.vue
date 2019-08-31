@@ -4,11 +4,15 @@
       <br>
       <div class="columns">
         <div class="column has-text-centered">
-          <h2 class="is-size-4">{{ profile.username }}'s Profile</h2>
+          <h2 class="is-size-4 title">{{ profile.username }}'s Profile</h2>
           <p>${{ profile.account.arithmecoin }}<img src="~/assets/arithmecoin_small.png" class="ac-image" /></p>
         </div>
         <div class="column has-text-centered">
-          <h2 class="is-size-4">{{ profile.username }}'s Career</h2>
+          <h2 class="is-size-4 title">{{ profile.username }}'s Career</h2>
+          <p>{{ profile.career.totalRaces }} total races</p>
+          <p>{{ profile.career.finishedRaces['1'] }} first place finishes</p>
+          <p>{{ profile.career.finishedRaces['2'] }} second place finishes</p>
+          <p>{{ profile.career.finishedRaces['3'] }} third place finishes</p>
         </div>
       </div>
     </div>
@@ -48,5 +52,9 @@ export default {
 <style scoped>
 .ac-image {
   vertical-align: middle;
+}
+.title {
+  border-bottom: 1px solid gray;
+  padding-bottom: 5px;
 }
 </style>

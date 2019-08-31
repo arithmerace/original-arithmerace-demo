@@ -16,9 +16,7 @@
     "user": {
       "$uid": {
         ".read": true,
-        "username": {
-          ".write": false
-        },
+        "username": {},
         "account": {
           "arithmecoin": {}
         },

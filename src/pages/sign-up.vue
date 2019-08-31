@@ -88,7 +88,7 @@ export default {
           } else if (result.data.error === 'username-invalid') {
             this.$toast.open({
               duration: 6000,
-              message: 'That username is invalid. It must be longer than 3 characters and shorter than 19 characters',
+              message: 'That username is invalid. It must be all-lowercase, numbers and letters only, 4-18 characters long.',
               queue: false
             })
             fireAuth().signOut()

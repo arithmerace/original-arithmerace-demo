@@ -36,6 +36,11 @@
                 <b-icon icon="menu-down" />
               </button>
               
+              <b-dropdown-item aria-role="menu-item">
+                <n-link :to="'/player/' + username">
+                  Profile
+                </n-link>
+              </b-dropdown-item>
               <b-dropdown-item v-for="(i, index) in accountMenuItems" :key="index" aria-role="menu-item">
                 <n-link :to="i.to">
                   {{ i.name }}
@@ -72,24 +77,24 @@ export default {
   data() {
     return {
       user: null,
-      username: null,
+      username: 'blah',
       menuItems: [
         { name: 'Race', to: '/race' },
         { name: 'Shop', to: '/shop' },
         { name: 'Inventory', to: '/inventory' }
       ],
       accountMenuItems: [
-        { name: 'Profile', to: '/player/' + this.username },
-        { name: 'Achievements', to: '/achievements' }
+        { name: 'Achievements', to: '/achievements' },
+        { name: 'Settings', to: '/settings' }
       ]
     }
   },
   mounted() {
     fireAuth().onAuthStateChanged((user) => {
       this.user = user
-      fireDb().ref('/user/' + this.user.uid + '/username').once('value', (snap) => {
+      fireDb().ref('/user/' + user.uid + '/username').once('value', (snap) => {
         this.username = snap.val()
-      })
+      }).catch(err => this.disp_error('navbarGetUName: ' + err, this))
     })
   },
   methods: {

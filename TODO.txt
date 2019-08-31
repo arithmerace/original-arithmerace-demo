@@ -1,0 +1,8 @@
+TODO issue: Immediately after creating account, profile button is broken because user profile hasn't been created yet.
+TODO count races and wins
+TODO Race end screen
+TODO Bots
+TODO Delete old races
+TODO Levels of difficulty
+TODO Refactor promises
+TODO Store

@@ -10,8 +10,8 @@ exports.createNewUser = function(data, ctx) {
         
         return { error: 'username-taken'}
       }
-      // Verify username
-      if (data.username.length > 18 || data.username.length < 4) {
+      // Validate username.
+      if (!/^([a-z0-9_-]){4,18}$/.test(data.username)) {
         admin.auth().deleteUser(ctx.auth.uid)
         
         return { error: 'username-invalid' }
@@ -30,7 +30,10 @@ exports.createNewUser = function(data, ctx) {
           joined: admin.database.ServerValue.TIMESTAMP
         },
         career: {
-          totalRaces: 0
+          totalRaces: 0,
+          finishedRaces: {
+            '1': 0
+          }
         }
       })
       return { success: true }

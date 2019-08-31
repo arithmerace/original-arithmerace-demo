@@ -137,6 +137,16 @@ exports.submitFinish = function(data, ctx) {
             
             checkForEndOfRace(finalPosition, data.raceId)
             
+            // Add race to player's career
+            admin.database().ref('user/' + ctx.auth.uid + '/career').once('value')
+              .then((careerSnap) => {
+                totalRaces = careerSnap.val().totalRaces + 1
+                winsInPosition = careerSnap.val().finishedRaces[finalPosition.toString()] + 1
+                
+                careerSnap.child('totalRaces').ref.set(totalRaces)
+                careerSnap.child('finishedRaces/' + finalPosition).set(winsInPosition)
+              })
+            
             return { success: true, finalPosition }
           })
         
