@@ -20,4 +20,4 @@ exports.submitFinish = functions.https.onCall(raceApi.submitFinish)
 exports.exitRace = functions.https.onCall(raceApi.exitRace)
 
 /* User management */
-exports.onNewUser = functions.auth.user().onCreate(userApi.onNewUser)
+exports.createNewUser = functions.https.onCall(userApi.createNewUser)

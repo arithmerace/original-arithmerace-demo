@@ -16,23 +16,22 @@
     "user": {
       "$uid": {
         ".read": true,
-        "profile": {
-          ".write": "auth.uid === $uid",
-          "username": {
-            ".validate": "newData.isString() && newData.val().length <= 16"
-          }
+        "username": {
+          ".write": false
         },
         "account": {
           "arithmecoin": {}
-        }
+        },
+        "profile": {},
+        "career": {}
       }
     },
-    "username": {
+    "usernames": {
       "$uname": {
         ".read": true,
-        
+        "uid": {}
       }
-    }
+    },
     "race": {
       "$raceid": {
         ".read": "auth.uid !== null",

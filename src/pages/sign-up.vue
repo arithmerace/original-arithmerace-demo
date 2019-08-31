@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { fireAuth, fireDb } from '~/plugins/firebase'
+import { fireAuth, fireFuncs } from '~/plugins/firebase'
 
 export default {
   name: 'SignUp',
@@ -62,6 +62,7 @@ export default {
     }
   },
   methods: {
+    createUserFunc: fireFuncs().httpsCallable('createNewUser'),
     signup() {
       if (!this.form.agree) {
         this.$toast.open({
@@ -74,13 +75,30 @@ export default {
       
       this.submitDisabled = true
       fireAuth().createUserWithEmailAndPassword(this.form.email, this.form.password).then((credential) => {
-        fireDb().ref('user/' + credential.user.uid + '/profile').set({
+        this.createUserFunc({
           username: this.form.username
-        }).then(() => {
-          this.$toast.open('Your account was successfully created.')
-          this.$router.push('/')
+        }).then((result) => {
+          if (result.data.error === 'username-taken') {
+            this.$toast.open({
+              duration: 6000,
+              message: 'That username is already taken',
+              queue: false
+            })
+            fireAuth().signOut()
+          } else if (result.data.error === 'username-invalid') {
+            this.$toast.open({
+              duration: 6000,
+              message: 'That username is invalid. It must be longer than 3 characters and shorter than 19 characters',
+              queue: false
+            })
+            fireAuth().signOut()
+          } else if (result.data.success) {
+            this.$toast.open('Your account was successfully created.')
+            this.$router.push('/')
+          }
+          this.submitDisabled = false
         }).catch((err) => {
-          this.$disp_error('createProfile: ' + err, this)
+          this.$disp_error('createUserFunc: ' + err, this)
           this.submitDisabled = false
         })
       }).catch((err) => {

@@ -5,5 +5,9 @@
   "playersToStartRace": 2,
   "raceStartDelay": 10000,
   "numProblemsPerRace": 12,
-  "completionProgressThreshold": 99
+  "completionProgressThreshold": 99,
+  
+  "account": {
+    "initialCoins": 500
+  }
 }

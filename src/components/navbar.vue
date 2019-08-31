@@ -65,20 +65,21 @@
 </template>
 
 <script>
-import { fireAuth } from '~/plugins/firebase'
+import { fireAuth, fireDb } from '~/plugins/firebase'
 
 export default {
   name: 'Navbar',
   data() {
     return {
       user: null,
+      username: null,
       menuItems: [
         { name: 'Race', to: '/race' },
         { name: 'Shop', to: '/shop' },
         { name: 'Inventory', to: '/inventory' }
       ],
       accountMenuItems: [
-        { name: 'Profile', to: '/profile' },
+        { name: 'Profile', to: '/player/' + this.username },
         { name: 'Achievements', to: '/achievements' }
       ]
     }
@@ -86,6 +87,9 @@ export default {
   mounted() {
     fireAuth().onAuthStateChanged((user) => {
       this.user = user
+      fireDb().ref('/user/' + this.user.uid + '/username').once('value', (snap) => {
+        this.username = snap.val()
+      })
     })
   },
   methods: {
