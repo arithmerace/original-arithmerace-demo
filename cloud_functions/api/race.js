@@ -140,7 +140,7 @@ exports.submitFinish = function(data, ctx) {
                 // Add race to player's career
                 careerSnap = userSnap.child('career')
                 totalRaces = careerSnap.val().totalRaces + 1
-                winsInPosition = careerSnap.val().finishedRaces[finalPosition.toString()] + 1
+                winsInPosition = (careerSnap.val().finishedRaces[finalPosition.toString()] || 0) + 1
   
                 careerSnap.child('totalRaces').ref.set(totalRaces)
                 careerSnap.child('finishedRaces/' + finalPosition).ref.set(winsInPosition)

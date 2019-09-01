@@ -29,7 +29,8 @@ module.exports = {
   */
   plugins: [
     '~/plugins/firebase.js',
-    '~/plugins/error_inject.client.js'
+    '~/plugins/error_inject.client.js',
+    '~/plugins/utilFuncs.js'
   ],
   /*
   ** Nuxt.js modules
@@ -37,8 +38,6 @@ module.exports = {
   modules: [
     // Doc: https://buefy.github.io/#/documentation
     'nuxt-buefy',
-    // Doc: https://axios.nuxtjs.org/usage
-    '@nuxtjs/axios',
     '@nuxtjs/eslint-module'
   ],
   /*
