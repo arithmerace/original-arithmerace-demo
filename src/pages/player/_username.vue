@@ -9,10 +9,10 @@
         </div>
         <div class="column has-text-centered">
           <h2 class="is-size-4 title">{{ profile.username }}'s Career</h2>
-          <p>{{ profile.career.totalRaces }} total races</p>
-          <p>{{ profile.career.finishedRaces['1'] }} first place finishes</p>
-          <p>{{ profile.career.finishedRaces['2'] }} second place finishes</p>
-          <p>{{ profile.career.finishedRaces['3'] }} third place finishes</p>
+          <p><strong>{{ profile.career.totalRaces }} total races:</strong></p>
+          <p>{{ profile.career.finishedRaces['1'] || '0' }} first place finishes</p>
+          <p>{{ profile.career.finishedRaces['2'] || '0' }} second place finishes</p>
+          <p>{{ profile.career.finishedRaces['3'] || '0' }} third place finishes</p>
         </div>
       </div>
     </div>

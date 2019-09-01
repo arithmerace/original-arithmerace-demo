@@ -16,7 +16,7 @@ function generateNewProblem() {
 }
 
 function checkForEndOfRace(playersFinished, raceId) {
-  admin.database().ref('race/' + raceId + '/players').once('value')
+  admin.database().ref('race/' + raceId + '/player').once('value')
     .then((snap) => {
       if (snap.val().length === playersFinished) { // All players have finished
         // Delete race
@@ -135,19 +135,24 @@ exports.submitFinish = function(data, ctx) {
             playerSnap.child('finalPosition').ref.set(finalPosition)
             numFinishedSnap.ref.set(finalPosition)
             
-            checkForEndOfRace(finalPosition, data.raceId)
-            
-            // Add race to player's career
-            admin.database().ref('user/' + ctx.auth.uid + '/career').once('value')
-              .then((careerSnap) => {
+            admin.database().ref('user/' + ctx.auth.uid).once('value')
+              .then((userSnap) => {
+                // Add race to player's career
+                careerSnap = userSnap.child('career')
                 totalRaces = careerSnap.val().totalRaces + 1
                 winsInPosition = careerSnap.val().finishedRaces[finalPosition.toString()] + 1
-                
+  
                 careerSnap.child('totalRaces').ref.set(totalRaces)
-                careerSnap.child('finishedRaces/' + finalPosition).set(winsInPosition)
+                careerSnap.child('finishedRaces/' + finalPosition).ref.set(winsInPosition)
+                
+                // Award player some arithmecoins
+                const totalCoins = userSnap.child('account/arithmecoin').val() + cfg.positionWinnings[finalPosition]
+                userSnap.child('account/arithmecoin').ref.set(totalCoins)
               })
             
-            return { success: true, finalPosition }
+            checkForEndOfRace(finalPosition, data.raceId)
+            
+            return { success: true, finalPosition, coinsAwarded: cfg.positionWinnings[finalPosition] }
           })
         
       }

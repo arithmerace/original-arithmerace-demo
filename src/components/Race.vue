@@ -394,8 +394,11 @@ export default {
       if (!this.game.finishSubmitted) {
         this.submitFinish({ raceId: this.raceRef.key }).then((result) => {
           if (result.data.success) {
-            this.game.running = false
-            this.$toast.open('You finished the race.')
+            this.$toast.open({
+              message: `You finished the race ${this.$with_ordinal_suffix(result.data.finalPosition)} and earned ${result.data.coinsAwarded} Arithmecoins.`,
+              duration: 8000,
+              type: 'is-success'
+            })
             this.game.players[this.user.uid].finished = true
             this.game.solutionInputDisabled = true
             this.game.questionLabel = 'Finished'
@@ -410,6 +413,7 @@ export default {
           }
         }).catch(err => this.$disp_error('You were unable to finish the race, due to an error: submitFinish: ' + err, this))
         this.game.finishSubmitted = true
+        this.game.running = false
       }
     }
   }

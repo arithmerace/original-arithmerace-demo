@@ -14,7 +14,6 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
-    "@nuxtjs/axios": "^5.3.6",
     "@pixi/canvas-renderer": "^5.0.4",
     "cross-env": "^5.2.0",
     "express": "^4.16.4",

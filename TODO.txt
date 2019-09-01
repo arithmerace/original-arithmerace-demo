@@ -5,4 +5,4 @@ TODO Bots
 TODO Delete old races
 TODO Levels of difficulty
 TODO Refactor promises
-TODO Store
+TODO Robot Store
