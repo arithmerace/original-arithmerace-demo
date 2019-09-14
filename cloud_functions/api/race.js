@@ -38,7 +38,7 @@ exports.convertWRtoGame = function(snap, ctx) {
         admin.database().ref('user/' + player.key).once('value', (userSnap) => {
           raceRef.child('player/' + player.key).set({
             name: (userSnap.val()) ? userSnap.val().username : 'Guest',
-            robot: 'guest_bot',
+            robot: (userSnap.val()) ? userSnap.val().robot : 'Guest',,
             batteries: {},
             finished: false,
             finalPosition: null,

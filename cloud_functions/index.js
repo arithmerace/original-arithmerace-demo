@@ -3,6 +3,7 @@ const admin = require('firebase-admin')
 
 const raceApi = require('./api/race.js')
 const userApi = require('./api/user.js')
+const robotApi = require('./api/robot.js')
 const ssrApp = require('./SSR.js')
 
 admin.initializeApp();
@@ -21,3 +22,8 @@ exports.exitRace = functions.https.onCall(raceApi.exitRace)
 
 /* User management */
 exports.createNewUser = functions.https.onCall(userApi.createNewUser)
+
+/* Robot management */
+exports.purchaseRobot = functions.https.onCall(robotApi.purchaseRobot)
+exports.equipRobot = functions.https.onCall(robotApi.equipRobot)
+

@@ -17,8 +17,12 @@
       "$uid": {
         ".read": true,
         "username": {},
+        "robot": {},
         "account": {
-          "arithmecoin": {}
+          "arithmecoin": {},
+          "robots": {
+            "$robotName": {}
+          }
         },
         "profile": {},
         "career": {}

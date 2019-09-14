@@ -23,8 +23,12 @@ exports.createNewUser = function(data, ctx) {
       // Create user profile and link to username
       admin.database().ref('user/' + ctx.auth.uid).set({
         username: data.username,
+        robot: 'guest_bot',
         account: {
-          arithmecoin: cfg.account.initialCoins
+          arithmecoin: cfg.account.initialCoins,
+          robots: {
+            'guest_bot': { owned: true }
+          }
         },
         profile: {
           joined: admin.database.ServerValue.TIMESTAMP
