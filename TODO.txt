@@ -5,7 +5,6 @@ TODO Bot racers (AI)
 TODO Delete old races
 TODO Levels of difficulty
 TODO Refactor promises
-TODO Robot Store
 TODO issue: Robot glitches backwards a few pixel when submitting answer on chromebook. TODO test this issue on laptop.
 TODO Change track so finishing looks realistic
 TODO remove finished players from track

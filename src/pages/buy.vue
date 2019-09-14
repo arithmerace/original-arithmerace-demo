@@ -4,7 +4,6 @@
       Buy Arithmecoins
     </h1>
     <p>Need <img src="~/assets/arithmecoin_small.png" class="ac-image" /> fast? Buy some below.</p>
-    <Card></Card>
   </section>
 </template>
 
