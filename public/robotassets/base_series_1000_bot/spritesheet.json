@@ -1,0 +1,165 @@
+{
+  "frames": {
+    "base_series_1000_bot0.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 80
+      }
+    },
+    "base_series_1000_bot1.png": {
+      "frame": {
+        "x": 50,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 80
+      }
+    },
+    "base_series_1000_bot2.png": {
+      "frame": {
+        "x": 100,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 80
+      }
+    },
+    "base_series_1000_bot3.png": {
+      "frame": {
+        "x": 0,
+        "y": 80,
+        "w": 50,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 80
+      }
+    },
+    "base_series_1000_bot4.png": {
+      "frame": {
+        "x": 50,
+        "y": 80,
+        "w": 50,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 80
+      }
+    },
+    "base_series_1000_bot5.png": {
+      "frame": {
+        "x": 100,
+        "y": 80,
+        "w": 50,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 80
+      }
+    },
+    "base_series_1000_bot6.png": {
+      "frame": {
+        "x": 0,
+        "y": 160,
+        "w": 50,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 80
+      }
+    }
+  },
+  "animations": {
+    "base_series_1000_bot": [
+      "base_series_1000_bot0.png",
+      "base_series_1000_bot1.png",
+      "base_series_1000_bot2.png",
+      "base_series_1000_bot3.png",
+      "base_series_1000_bot4.png",
+      "base_series_1000_bot5.png",
+      "base_series_1000_bot6.png"
+    ]
+  },
+  "meta": {
+    "app": "https://github.com/piskelapp/piskel/",
+    "version": "1.0",
+    "image": "spritesheet.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 150,
+      "h": 240
+    }
+  }
+}

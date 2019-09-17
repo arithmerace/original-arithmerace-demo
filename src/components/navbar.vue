@@ -25,10 +25,10 @@
     <div class="navbar-menu">
       <div class="navbar-start" />
       <div class="navbar-end">
-        <n-link v-for="(i, index) in menuItems" :key="index" class="navbar-item" :to="i.to">
-          {{ i.name }}
-        </n-link>
         <template v-if="user && !user.isAnonymous">
+          <n-link v-for="(i, index) in loggedInMenuItems" :key="index" class="navbar-item" :to="i.to">
+            {{ i.name }}
+          </n-link>
           <div class="navbar-item">
             <b-dropdown aria-role="menu" position="is-bottom-left">
               <button slot="trigger" class="button is-light">
@@ -53,6 +53,9 @@
           </div>
         </template>
         <template v-else>
+          <n-link v-for="(i, index) in loggedOutMenuItems" :key="index" class="navbar-item" :to="i.to">
+            {{ i.name }}
+          </n-link>
           <n-link to="/login" class="navbar-item">
             Login
           </n-link>
@@ -78,10 +81,15 @@ export default {
     return {
       user: null,
       username: 'blah',
-      menuItems: [
+      loggedInMenuItems: [
         { name: 'Race', to: '/race' },
         { name: 'Shop', to: '/shop' },
         { name: 'Inventory', to: '/inventory' }
+      ],
+      loggedOutMenuItems: [
+        { name: 'Race', to: '/race' },
+        { name: 'Students', to: '/student/about' },
+        { name: 'Teachers', to: '/teachers/about' }
       ],
       accountMenuItems: [
         { name: 'Achievements', to: '/achievements' },
