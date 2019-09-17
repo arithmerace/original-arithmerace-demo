@@ -214,6 +214,7 @@ export default {
           this.game.players[playerid] = {
             lane: player.lane,
             name: player.name,
+            robot: player.robot,
             batteries: {},
             numBatteries: 0,
             progress: 0,

@@ -10,3 +10,5 @@ TODO Change track so finishing looks realistic
 TODO remove finished players from track
 TODO welcome tutorial
 TODO *** ADD TESTS ***
+TODO Math proficieancy detector
+TODO Expannd problem algorithm

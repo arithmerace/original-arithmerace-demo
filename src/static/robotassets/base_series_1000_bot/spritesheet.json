@@ -155,7 +155,7 @@
   "meta": {
     "app": "https://github.com/piskelapp/piskel/",
     "version": "1.0",
-    "image": "base_series_1000_bot.png",
+    "image": "spritesheet.png",
     "format": "RGBA8888",
     "size": {
       "w": 150,
