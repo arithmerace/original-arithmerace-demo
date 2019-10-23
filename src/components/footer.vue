@@ -4,12 +4,14 @@
       <div class="column">
         <strong>Arithmerace</strong>
         built by Benjamin A.
+        <br><br>
+        This version was released for the Congressional App Challenge 2019. Keep an eye out for the official release!
       </div>
       <div class="column">
-        Stuff will go here.
+        Copyright &copy; <a href="https://scitronboy.com/" target="_blank">Benjamin Ashbaugh</a> 2019
       </div>
       <div class="column">
-        Stuff will go here.
+        Disclaimer: By using this website, you acknowledge that you understand that this is an alpha testing preview and you consent to cookie use and data collection for development purposes. Use at your own risk.
       </div>
     </div>
   </footer>

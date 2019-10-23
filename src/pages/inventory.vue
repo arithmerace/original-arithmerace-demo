@@ -4,27 +4,22 @@
       My Inventory
     </h1>
     <h2 class="is-size-4">Robots</h2>
-    <div class="columns">
+    <div v-if="!loggedOut" class="columns">
       <div class="column" v-for="column in [0, 1, 2, 3]" :key="column">
         <template v-for="(robot, rid) in robotList.robots">
-          <Card v-if="(robot.id - column) % 4 === 0" :key="rid" :title="robot.name">
+          <Card v-if="(robot.id - column) % 4 === 0 && userRobots[rid] && userRobots[rid].owned" :key="rid" :title="robot.name">
             <img :src="'/robotassets/' + rid + '/thumbnail.png'" :alt="rid" />
             <template slot="footer">
-              <n-link  v-if="loggedOut" to='/login' class="card-footer-item">
-                {{ robot.price }} <img src="~/assets/arithmecoin_small.png" class="ac-image" alt="arithmecoin" /> - (Sign in)
-              </n-link>
-              <span v-else-if="equippedBot === rid" class="card-footer-item">Equipped</span>
-              <a v-else-if="userRobots[rid] && userRobots[rid].owned" class="card-footer-item" @click="() => handleEquip(rid)">Equip</a>
-              <span v-else-if="robot.price > userArithmecoin" class="card-footer-item">{{ robot.price }} <img src="~/assets/arithmecoin_small.png" class="ac-image" alt="arithmecoin" /> - Too expensive</span>
-              <a v-else class="card-footer-item" @click="() => handlePurchase(rid)">{{ robot.price }} <img src="~/assets/arithmecoin_small.png" class="ac-image" alt="arithmecoin" /> - Buy</a>
+              <span v-if="equippedBot === rid" class="card-footer-item">Equipped</span>
+              <a v-else class="card-footer-item" @click="() => handleEquip(rid)">Equip</a>
             </template>
           </Card>
         </template>
       </div>
     </div>
+    <p>You don't have any more robots! Want to go buy another from <n-link to="/shop">the store?</n-link></p>
   </section>
 </template>
-
 <script>
 import { fireFuncs, fireDb, fireAuth } from '~/plugins/firebase'
 import robotList from '~/assets/robotList.js'
@@ -53,32 +48,13 @@ export default {
       })
   },
   methods: {
-    purchaseRobot: fireFuncs().httpsCallable('purchaseRobot'),
     equipRobot: fireFuncs().httpsCallable('equipRobot'),
-    handlePurchase(robotId) {
-      this.$dialog.confirm({
-        title: 'Confirm',
-        message: `Are you sure you want to buy the <strong>${this.robotList.robots[robotId].name}</strong> for ${this.robotList.robots[robotId].price} Arithmecoins?`,
-        cancelText: 'Cancel',
-        confirmText: 'Ok',
-        type: 'is-success',
-        onConfirm: () => {
-          this.purchaseRobot({ robot: robotId })
-            .then((result) => {
-              if (result.data.success) {
-                this.$toast.open('Robot purchased successfully!')
-                this.$router.push('/inventory')
-              } else this.$disp_error('purchaseRobot Error', this)
-            }).catch(err => this.$disp_error('purchaseRobot: ' + err, this))
-        }
-      })
-    },
     handleEquip(robotId) {
       this.equipRobot({ robot: robotId })
         .then((result) => {
           if (result.data.success) {
             this.$toast.open('Robot equipped')
-            this.$router.push('/inventory')
+            window.location.reload(true)
           } else this.$disp_error('purchaseRobot Error', this)
         }).catch(err => this.$disp_error('purchaseRobot: ' + err, this))
     }

@@ -22,6 +22,7 @@
         </template>
       </div>
     </div>
+    <p><strong>More robots coming soon!!!</strong></p>
   </section>
 </template>
 

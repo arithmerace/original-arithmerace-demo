@@ -25,9 +25,9 @@
         <b-field>
           <b-checkbox v-model="form.agree">
             I agree to the
-            <n-link to="/site/terms-and-privacy">
+            <a href="/site/terms-and-privacy" target="_blank">
               terms and privacy policy
-            </n-link>
+            </a>
             .
           </b-checkbox>
         </b-field>
@@ -94,7 +94,7 @@ export default {
             fireAuth().signOut()
           } else if (result.data.success) {
             this.$toast.open('Your account was successfully created.')
-            this.$router.push('/')
+            window.location.replace('/')
           }
           this.submitDisabled = false
         }).catch((err) => {

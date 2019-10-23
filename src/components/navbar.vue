@@ -88,8 +88,8 @@ export default {
       ],
       loggedOutMenuItems: [
         { name: 'Race', to: '/race' },
-        { name: 'Students', to: '/student/about' },
-        { name: 'Teachers', to: '/teachers/about' }
+        { name: 'Students', to: '/students/hello' },
+        { name: 'Teachers', to: '/teachers/hello' }
       ],
       accountMenuItems: [
         { name: 'Achievements', to: '/achievements' },
