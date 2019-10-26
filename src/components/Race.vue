@@ -397,7 +397,7 @@ export default {
           if (result.data.success) {
             this.$toast.open({
               message: `You finished the race ${this.$with_ordinal_suffix(result.data.finalPosition)} and earned ${result.data.coinsAwarded} Arithmecoins.`,
-              duration: 8000,
+              duration: 1000000,
               type: 'is-success'
             })
             this.game.players[this.user.uid].finished = true

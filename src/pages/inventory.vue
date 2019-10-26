@@ -53,8 +53,8 @@ export default {
       this.equipRobot({ robot: robotId })
         .then((result) => {
           if (result.data.success) {
-            this.$toast.open('Robot equipped')
-            window.location.reload(true)
+            this.$toast.open('Robot equipped.')
+            // window.location.reload(true)
           } else this.$disp_error('purchaseRobot Error', this)
         }).catch(err => this.$disp_error('purchaseRobot: ' + err, this))
     }

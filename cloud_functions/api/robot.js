@@ -7,8 +7,8 @@ exports.purchaseRobot = function(data, ctx) {
     .then((snap) => {
       const arithmecoinSnap = snap.child('account/arithmecoin')
       const robot = robotList.robots[data.robot]
-      if (!robot) return
-      if (robot.price > robot.price) return
+      if (!robot) return { success: false }
+      if (robot.price > arithmecoinSnap.val()) return { success: false }
       
       arithmecoinSnap.ref.set(arithmecoinSnap.val() - robot.price)
       snap.child('account/robots/' + data.robot).ref.set({ owned: true })

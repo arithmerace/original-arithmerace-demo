@@ -8,9 +8,9 @@ TODO Plugins
 TODO issue: Robot glitches backwards a few pixel when submitting answer on chromebook. TODO test this issue on laptop.
 TODO Change track so finishing looks realistic
 TODO remove finished players from track
-TODO welcome tutorial
 TODO *** ADD TESTS ***
 TODO Math proficieancy detector
+TODO Welcome quiz/tutorial
 TODO Expand problem algorithm
 TODO better graphics
 TODO branding + custom style
