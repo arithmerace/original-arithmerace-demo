@@ -161,19 +161,18 @@ exports.submitFinish = function(data, ctx) {
       }
       
       // Check for bot finishes first
-      numPlayersFinishedRef = admin.database().ref('race/' + data.raceId + '/numPlayersFinished')
-      playerSnap.ref.parent.once('value')
+      // numBotFinishes stores the number of bots that have finished since last submitFinish
+      let numBotFinishes = 0
+      const numPlayersFinishedRef = admin.database().ref('race/' + data.raceId + '/numPlayersFinished')
+      return playerSnap.ref.parent.once('value')
         .then((playersSnap) => {
           playersSnap.forEach((player) => {
-            if (player.child('isBot').val()) {
-              // User current race length to see if robot has finished
+            if (player.child('isBot').val() && !player.child('finished').val()) {
+              // Use current race length to see if bot has finished
               const currentRaceLength = Date.now() - player.child('startTime').val() / 1000
               if (currentRaceLength * player.child('progressPerSecond').val() >= 100) {
-                numPlayersFinishedRef.once('value')
-                  .then((playersFinishedSnap) => {
-                    // Increment players finished snap if the bot finished
-                    playersFinishedSnap.ref.set(playersFinishedSnap + 1)
-                  })
+                numBotFinishes ++
+                player.child('finished').ref.set(true)
               }
             }
           })
@@ -194,7 +193,7 @@ exports.submitFinish = function(data, ctx) {
             // Increment players finished counter and send final position to player
             return numPlayersFinishedRef.once('value')
               .then((numFinishedSnap) => {
-                const finalPosition = numFinishedSnap.val() + 1
+                const finalPosition = numFinishedSnap.val() + 1 + numBotFinishes
                 playerSnap.child('finalPosition').ref.set(finalPosition)
                 numFinishedSnap.ref.set(finalPosition)
                 

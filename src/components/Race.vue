@@ -100,7 +100,6 @@ export default {
         batteryLifeSpan: 5,
         batteryProgressPerSecond: 1,
         // Client-only config
-        waitTime: 20000,
         canvasHeight: 450,
         canvasWidth: 700,
         forceCanvas: true,
@@ -113,19 +112,23 @@ export default {
         stripeMovementRate: 10,
         playerAnimationSpeed: 0.2 // Frames per application frame
       },
+      waitingRoom: {
+        waitingRoomUpdateInterval: null,
+        waitingRoomText: null,
+        waitingRoomTimeText: null,
+        secondsToWait: 20
+      },
       game: {
         running: false,
         finished: false,
         position: '-',
         numBatteries: 0,
-        waitingRoomText: null,
         questionValue: '',
         questionLabel: 'In waiting room',
         userSolution: '',
         solutionInputDisabled: true,
         solutionFieldType: null,
         finishSubmitted: false,
-        startTime: null,
         track: {
           stripes: []
         },
@@ -173,14 +176,17 @@ export default {
         forceCanvas: this.config.forceCanvas
       })
       
-      this.game.waitingRoomText = new PIXI.Text('Joining Waiting Room')
-      this.game.waitingRoomText.position.set(200, 300)
-      this.app.stage.addChild(this.game.waitingRoomText)
+      this.waitingRoom.waitingRoomText = new PIXI.Text('Joining Waiting Room')
+      this.waitingRoom.waitingRoomText.position.set(200, 300)
+      this.app.stage.addChild(this.waitingRoom.waitingRoomText)
+      
+      this.waitingRoom.waitingRoomTimeText = new PIXI.Text('Waiting...')
+      this.waitingRoom.waitingRoomTimeText.position.set(150, 350)
+      this.app.stage.addChild(this.waitingRoom.waitingRoomTimeText)
       
       // Add user to waiting room
       const waitingRoomRef = fireDb().ref('waitingroom/' + this.user.uid)
       
-      this.startTime = Date.now()
       waitingRoomRef.set({
         waiting: true
       }).catch(err => this.$disp_error('waitingroomset:' + err, this))
@@ -192,15 +198,22 @@ export default {
         let text = '0 players'
         if (snap.val() !== null) text = Object.keys(snap.val()).length.toString() + ' player(s)'
         
-        this.game.waitingRoomText.text = text + ' in waiting room'
+        this.waitingRoom.waitingRoomText.text = text + ' in waiting room'
         this.game.questionValue = text
       })
+      
+      // Waiting room update loop
+      this.waitingRoom.waitingRoomUpdateInterval = setInterval(() => {
+        this.waitingRoom.secondsToWait -= 1
+        this.waitingRoom.waitingRoomTimeText.text = `Waiting for ${this.waitingRoom.secondsToWait} more seconds...`
+      }, 1000)
       
       // When a race is assigned, initialize the game
       fireDb().ref('user/' + this.user.uid + '/assignedRace').on('value', (snap) => {
         if (snap.val() != null) {
           this.raceRef = fireDb().ref('race/' + snap.val())
           WRref.off()
+          clearInterval(this.waitingRoom.waitingRoomUpdateInterval)
           this.initRace()
         }
       })
@@ -213,7 +226,8 @@ export default {
       
       // Fetch player data
       this.raceRef.child('player').once('value', (snap) => {
-        this.game.waitingRoomText.text = ''
+        this.waitingRoom.waitingRoomText.text = ''
+        this.waitingRoom.waitingRoomTimeText.text = ''
         
         // Create player objects
         for (const [playerid, player] of Object.entries(snap.val())) {
