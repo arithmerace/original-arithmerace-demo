@@ -1,16 +1,24 @@
-TODO issue: Immediately after creating account, profile button is broken because user profile hasn't been created yet.
-TODO Race finish screen
+Top priority:
 TODO Bot racers (AI)
+TODO add "queue: false" to all toasts
+
+Second priority:
+TODO Race finish screen
 TODO Delete old races
 TODO Levels of difficulty
 TODO Refactor promises
-TODO Plugins
+TODO Refactor into Vue plugins
 TODO issue: Robot glitches backwards a few pixel when submitting answer on chromebook. TODO test this issue on laptop.
 TODO Change track so finishing looks realistic
 TODO remove finished players from track
-TODO *** ADD TESTS ***
-TODO Math proficieancy detector
+TODO Add tests
+TODO Math proficiency detector
 TODO Welcome quiz/tutorial
 TODO Expand problem algorithm
 TODO better graphics
+TODO Security + best practices check
 TODO branding + custom style
+TODO custom auth
+TODO client-side auth management with state and pre-render stuff
+TODO Migrate to Vue 3? TypeScript?
+TODO Prevent Botfill spamming

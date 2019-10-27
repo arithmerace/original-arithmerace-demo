@@ -27,31 +27,47 @@ function checkForEndOfRace(playersFinished, raceId) {
 }
 
 exports.convertWRtoGame = function(snap, ctx) {
-  snap.ref.parent.once("value", (wrsnap, ctx) => {
-    if (wrsnap.numChildren() == cfg.playersToStartRace) {
+  snap.ref.parent.once('value', (wrsnap, ctx) => {
+    if (wrsnap.numChildren() === cfg.playersToStartRace) {
       // Create new game ref
       const raceRef = admin.database().ref('race').push()
       
       let lane = 1
       wrsnap.forEach((player) => {
         // For each player in waiting room, add player data to race then remove player from waiting room
-        admin.database().ref('user/' + player.key).once('value', (userSnap) => {
-          raceRef.child('player/' + player.key).set({
-            name: (userSnap.val()) ? userSnap.val().username : 'Guest',
-            robot: (userSnap.val()) ? userSnap.val().robot : 'guest_bot',
+        if (player.child('isBot').val()) {
+          raceRef.child('player').push({
+            name: cfg.bot_names[Math.floor(Math.random()*cfg.bot_names.length)],
+            robot: cfg.bot_robots[Math.floor(Math.random()*cfg.bot_robots.length)],
             batteries: {},
             finished: false,
             finalPosition: null,
-            currentProblem: 0,
-            lane
+            lane,
+            isBot: true,
+            progressPerSecond: cfg.botMinProgressPerSecond + Math.floor(Math.random() * (cfg.botMaxProgressPerSecond - cfg.botMinProgressPerSecond + 1))
           })
+        } else {
+          admin.database().ref('user/' + player.key).once('value')
+            .then((userSnap) => {
+              raceRef.child('player/' + player.key).set({
+                name: (userSnap.val()) ? userSnap.val().username : 'Guest',
+                isGuest: (!userSnap.val()),
+                robot: (userSnap.val()) ? userSnap.val().robot : 'guest_bot',
+                batteries: {},
+                finished: false,
+                finalPosition: null,
+                currentProblem: 0,
+                lane
+              })
           
-          userSnap.child('assignedRace').ref.set(raceRef.key)
-          
-          player.ref.remove()
-        
-          lane ++
-        })
+            
+              userSnap.child('assignedRace').ref.set(raceRef.key)
+              
+              player.ref.remove()
+            
+              lane ++
+            })
+        }
       })
       // Generate math problems
       const problems = [generateNewProblem()]
@@ -68,6 +84,32 @@ exports.convertWRtoGame = function(snap, ctx) {
       }, cfg.raceStartDelay)
     }
   })
+}
+
+exports.botFill = function(data, ctx) {
+  admin.database().ref('/waitingroombotfilled').once('value')
+    .then((botFilledSnap) => {
+      // Ensure that botfill hasn't already been requested
+      if (botFilledSnap.val()) return
+  
+      botFilledSnap.ref.set(true)
+      
+      admin.database().ref('/waitingroom').once('value')
+        .then((snap) => {
+          // Ensure that player requesting botfill is in waiting room
+          if (!snap.child(ctx.auth.uid).val()) return
+          
+          // Create the right amount of bots
+          
+          const numRealPlayers = Object.keys(snap.val()).length
+          
+          const botsToCreate = cfg.playersToStartRace - numRealPlayers
+          
+          for (i=0; i<botsToCreate; i++) {
+            snap.ref.push({ waiting: true, isBot: true })
+          }
+        })
+    })
 }
 
 exports.submitProblemSolution = function(data, ctx) {
@@ -115,6 +157,25 @@ exports.submitFinish = function(data, ctx) {
         return { success: false }
       }
       
+      // Check for bot finishes first
+      numPlayersFinishedRef = admin.database().ref('race/' + data.raceId + '/numPlayersFinished')
+      playerSnap.ref.parent.once('value')
+        .then((playersSnap) => {
+          playersSnap.forEach((player) => {
+            if (player.child('isBot').val()) {
+              // User bot's battery to determine when race started
+              const currentRaceLength = Date.now() - player.val().batteries[0].used
+              if (currentRaceLength * player.child('progressPerSecond').val() >= 100) {
+                numPlayersFinishedRef.once('value')
+                  .then((playersFinishedSnap) => {
+                    // Increment players finished snap if the bot finished
+                    playersFinishedSnap.ref.set(playersFinishedSnap + 1)
+                  })
+              }
+            }
+          })
+        })
+  
       // Verify that player is finished
       let progress = 0
       for (const battery of Object.values(playerSnap.val().batteries)) {
@@ -129,7 +190,7 @@ exports.submitFinish = function(data, ctx) {
       if (progress >= cfg.completionProgressThreshold) {
         playerSnap.child('finished').ref.set(true)
         // Increment players finished counter and send final position to player
-        return admin.database().ref('race/' + data.raceId + '/numPlayersFinished').once('value')
+        return numPlayersFinishedRef.once('value')
           .then((numFinishedSnap) => {
             const finalPosition = numFinishedSnap.val() + 1
             playerSnap.child('finalPosition').ref.set(finalPosition)

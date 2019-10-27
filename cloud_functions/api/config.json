@@ -2,10 +2,25 @@
   "batteryLifeSpan": 5,
   "batteryProgressPerSecond": 1,
 
-  "playersToStartRace": 2,
+  "playersToStartRace": 5,
   "raceStartDelay": 10000,
   "numProblemsPerRace": 12,
   "completionProgressThreshold": 99,
+  "bot_names": [
+    "Jeffrey",
+    "JimboBot",
+    "amazingRacer",
+    "Im_just_a_bot",
+    "Mathew",
+    "Pepper",
+    "GoBot"
+  ],
+  "bot_robots": [
+    "guest_bot",
+    "base_series_1000_bot"
+  ],
+  "botMinProgressPerSecond": 5,
+  "botMaxProgressPerSecond": 8,
   
   "account": {
     "initialCoins": 500

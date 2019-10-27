@@ -11,6 +11,8 @@
         >
           <h1>
             {{ player.name }}
+            <span v-if="player.isBot" class="bot-label"> [bot]</span>
+            <span v-if="player.isGuest" class="guest-label"> [guest]</span>
           </h1>
         </div>
       </div>
@@ -93,11 +95,13 @@ export default {
       user: null,
       raceRef: null,
       serverTimeOffset: null,
+      waitTimeOut: null,
       config: {
         // This part should match server config
         batteryLifeSpan: 5,
         batteryProgressPerSecond: 1,
         // Client-only config
+        waitTime: 20000,
         canvasHeight: 450,
         canvasWidth: 700,
         forceCanvas: true,
@@ -122,6 +126,7 @@ export default {
         solutionInputDisabled: true,
         solutionFieldType: null,
         finishSubmitted: false,
+        startTime: null,
         track: {
           stripes: []
         },
@@ -158,6 +163,7 @@ export default {
     submitSolution: fireFuncs().httpsCallable('submitProblemSolution'),
     submitFinish: fireFuncs().httpsCallable('submitFinish'),
     submitExitRace: fireFuncs().httpsCallable('exitRace'),
+    requestBotFill: fireFuncs().httpsCallable('botFill'),
     joinWaitingRoom() {
       // Initialize Pixi window
       this.app = new PIXI.Application({
@@ -175,10 +181,22 @@ export default {
       // Add user to waiting room
       const waitingRoomRef = fireDb().ref('waitingroom/' + this.user.uid)
       
+      this.startedWaitingAt = Date.now()
       waitingRoomRef.set({
         waiting: true
       }).catch(err => this.$disp_error('waitingroomset:' + err, this))
       waitingRoomRef.onDisconnect().remove()
+      
+      // Set timeout for bot fill
+      this.waitTimeout = setTimeout(() => {
+        this.$toast.open({
+          message: "Couldn't find any more players. Filling race with bots.",
+          duration: 2000,
+          queue: false
+        })
+        this.requestBotFill()
+          .catch(err => this.$disp_error('RequestBotFill: ' + err, this))
+      }, this.config.waitTime)
       
       // Update waiting room data
       const WRref = fireDb().ref('waitingroom')
@@ -194,6 +212,7 @@ export default {
       fireDb().ref('user/' + this.user.uid + '/assignedRace').on('value', (snap) => {
         if (snap.val() != null) {
           this.raceRef = fireDb().ref('race/' + snap.val())
+          clearTimeout(this.waitTimeout)
           WRref.off()
           this.initRace()
         }
@@ -277,6 +296,7 @@ export default {
     startRace(firstProb) {
       document.title = 'Arithmerace'
       this.$toast.open({ message: 'Race starting!', queue: false })
+      this.game.startTime = Date.now()
       this.game.questionValue = firstProb
       this.game.solutionInputDisabled = false
       this.$refs.solutionInput.focus()
@@ -312,8 +332,10 @@ export default {
     update() {
       // Update player data
       for (const player of Object.values(this.game.players)) {
-        if (!player.finished) {
-          let progress = 0
+        let progress = 0
+        if (player.isBot) {
+          progress = (Date.now() - this.startTime) / 1000 * player.progressPerSecond
+        } else if (!player.finished) {
           let numBatteries = 0
           for (const battery of Object.values(player.batteries)) {
             const timeSinceUsed = ((Date.now() + this.serverTimeOffset) - battery.used) / 1000
@@ -476,6 +498,14 @@ export default {
 
 .bubble-player { /* Coloring for client player's label */
   background: #c7c400;
+}
+
+.bot-label {
+  color: #FF0000;
+}
+
+.guest-label {
+  color: #00FF00;
 }
 
 .speech-bubble h1 {

@@ -15,7 +15,7 @@ exports.ssrapp = functions.https.onRequest(ssrApp.app)
 exports.convertWaitingRoomToGame = functions.database
   .ref('waitingroom/{user}')
   .onCreate(raceApi.convertWRtoGame)
-  
+exports.botFill = functions.https.onCall(raceApi.botFill)
 exports.submitProblemSolution = functions.https.onCall(raceApi.submitProblemSolution)
 exports.submitFinish = functions.https.onCall(raceApi.submitFinish)
 exports.exitRace = functions.https.onCall(raceApi.exitRace)

@@ -11,7 +11,7 @@
         Copyright &copy; <a href="https://scitronboy.com/" target="_blank">Benjamin Ashbaugh</a> 2019
       </div>
       <div class="column">
-        Disclaimer: By using this website, you acknowledge that you understand that this is an alpha testing preview and you consent to cookie use and data collection for development purposes. Use at your own risk.
+        Disclaimer: By using this website, you acknowledge that you understand that this is a beta preview of the site and you consent to cookie use and the collection of usage information for development purposes. Use at your own risk.
       </div>
     </div>
   </footer>
