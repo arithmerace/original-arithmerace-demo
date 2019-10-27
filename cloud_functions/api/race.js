@@ -26,8 +26,23 @@ function checkForEndOfRace(playersFinished, raceId) {
     })
 }
 
-exports.convertWRtoGame = function(snap, ctx) {
-  snap.ref.parent.once('value', (wrsnap, ctx) => {
+function botFill() {
+  admin.database().ref('/waitingroom').once('value')
+    .then((snap) => {
+      // Create the right amount of bots
+      
+      const numRealPlayers = Object.keys(snap.val()).length
+      
+      const botsToCreate = cfg.playersToStartRace - numRealPlayers
+      
+      for (i=0; i<botsToCreate; i++) {
+        snap.ref.push({ waiting: true, isBot: true })
+      }
+    })
+}
+
+exports.convertWRtoGame = function(playerSnap, ctx) {
+  playerSnap.ref.parent.once('value', (wrsnap, ctx) => {
     if (wrsnap.numChildren() === cfg.playersToStartRace) {
       // Create new game ref
       const raceRef = admin.database().ref('race').push()
@@ -56,18 +71,19 @@ exports.convertWRtoGame = function(snap, ctx) {
                 batteries: {},
                 finished: false,
                 finalPosition: null,
+                startTime: null,
                 currentProblem: 0,
-                lane
+                lane: lane - 1 // TODO Fix this - it shouldn't need the -1
               })
           
             
               userSnap.child('assignedRace').ref.set(raceRef.key)
-              
-              player.ref.remove()
-            
-              lane ++
             })
         }
+        
+        player.ref.remove()
+            
+        lane ++
       })
       // Generate math problems
       const problems = [generateNewProblem()]
@@ -76,40 +92,27 @@ exports.convertWRtoGame = function(snap, ctx) {
       setTimeout(() => {
         raceRef.child('player').once('value', (playersSnap) => {
           playersSnap.forEach((player) => {
-            // Give player 1 battery to start with
+            // Give player 1 battery to start with; set start time
             player.child('batteries').ref.push({ used: Date.now() })
+            player.ref.child('startTime').set(Date.now())
           })
           raceRef.child('firstProblem').set(problems[0].question)
         })
       }, cfg.raceStartDelay)
+    } else {
+      // Start delay for bot filling, but make sure this player isn't a bot
+      if (playerSnap.child('isBot').val()) return
+      setTimeout(() => {
+        playerSnap.ref.parent.once('value')
+          .then((wrsnap) => {
+            if (playerSnap.key in wrsnap.val()) {
+              // Player still in waiting room, add bots
+              botFill()
+            }
+          })
+      }, cfg.botFillWaitTime)
     }
   })
-}
-
-exports.botFill = function(data, ctx) {
-  admin.database().ref('/waitingroombotfilled').once('value')
-    .then((botFilledSnap) => {
-      // Ensure that botfill hasn't already been requested
-      if (botFilledSnap.val()) return
-  
-      botFilledSnap.ref.set(true)
-      
-      admin.database().ref('/waitingroom').once('value')
-        .then((snap) => {
-          // Ensure that player requesting botfill is in waiting room
-          if (!snap.child(ctx.auth.uid).val()) return
-          
-          // Create the right amount of bots
-          
-          const numRealPlayers = Object.keys(snap.val()).length
-          
-          const botsToCreate = cfg.playersToStartRace - numRealPlayers
-          
-          for (i=0; i<botsToCreate; i++) {
-            snap.ref.push({ waiting: true, isBot: true })
-          }
-        })
-    })
 }
 
 exports.submitProblemSolution = function(data, ctx) {
@@ -163,8 +166,8 @@ exports.submitFinish = function(data, ctx) {
         .then((playersSnap) => {
           playersSnap.forEach((player) => {
             if (player.child('isBot').val()) {
-              // User bot's battery to determine when race started
-              const currentRaceLength = Date.now() - player.val().batteries[0].used
+              // User current race length to see if robot has finished
+              const currentRaceLength = Date.now() - player.child('startTime').val() / 1000
               if (currentRaceLength * player.child('progressPerSecond').val() >= 100) {
                 numPlayersFinishedRef.once('value')
                   .then((playersFinishedSnap) => {
@@ -174,51 +177,51 @@ exports.submitFinish = function(data, ctx) {
               }
             }
           })
-        })
-  
-      // Verify that player is finished
-      let progress = 0
-      for (const battery of Object.values(playerSnap.val().batteries)) {
-        const timeSinceUsed = ((Date.now()) - battery.used) / 1000
-        if (timeSinceUsed > cfg.batteryLifeSpan) {
-          progress += cfg.batteryProgressPerSecond * cfg.batteryLifeSpan
-        } else {
-          progress += cfg.batteryProgressPerSecond * timeSinceUsed
-        }
-      }
-      
-      if (progress >= cfg.completionProgressThreshold) {
-        playerSnap.child('finished').ref.set(true)
-        // Increment players finished counter and send final position to player
-        return numPlayersFinishedRef.once('value')
-          .then((numFinishedSnap) => {
-            const finalPosition = numFinishedSnap.val() + 1
-            playerSnap.child('finalPosition').ref.set(finalPosition)
-            numFinishedSnap.ref.set(finalPosition)
-            
-            admin.database().ref('user/' + ctx.auth.uid).once('value')
-              .then((userSnap) => {
-                // Add race to player's career
-                careerSnap = userSnap.child('career')
-                totalRaces = careerSnap.val().totalRaces + 1
-                winsInPosition = (careerSnap.val().finishedRaces[finalPosition.toString()] || 0) + 1
-  
-                careerSnap.child('totalRaces').ref.set(totalRaces)
-                careerSnap.child('finishedRaces/' + finalPosition).ref.set(winsInPosition)
+          
+          // Verify that player is finished
+          let progress = 0
+          for (const battery of Object.values(playerSnap.val().batteries)) {
+            const timeSinceUsed = ((Date.now()) - battery.used) / 1000
+            if (timeSinceUsed > cfg.batteryLifeSpan) {
+              progress += cfg.batteryProgressPerSecond * cfg.batteryLifeSpan
+            } else {
+              progress += cfg.batteryProgressPerSecond * timeSinceUsed
+            }
+          }
+          
+          if (progress >= cfg.completionProgressThreshold) {
+            playerSnap.child('finished').ref.set(true)
+            // Increment players finished counter and send final position to player
+            return numPlayersFinishedRef.once('value')
+              .then((numFinishedSnap) => {
+                const finalPosition = numFinishedSnap.val() + 1
+                playerSnap.child('finalPosition').ref.set(finalPosition)
+                numFinishedSnap.ref.set(finalPosition)
                 
-                // Award player some arithmecoins
-                const totalCoins = userSnap.child('account/arithmecoin').val() + cfg.positionWinnings[finalPosition]
-                userSnap.child('account/arithmecoin').ref.set(totalCoins)
+                admin.database().ref('user/' + ctx.auth.uid).once('value')
+                  .then((userSnap) => {
+                    // Add race to player's career
+                    careerSnap = userSnap.child('career')
+                    totalRaces = careerSnap.val().totalRaces + 1
+                    winsInPosition = (careerSnap.val().finishedRaces[finalPosition.toString()] || 0) + 1
+      
+                    careerSnap.child('totalRaces').ref.set(totalRaces)
+                    careerSnap.child('finishedRaces/' + finalPosition).ref.set(winsInPosition)
+                    
+                    // Award player some arithmecoins
+                    const totalCoins = userSnap.child('account/arithmecoin').val() + cfg.positionWinnings[finalPosition]
+                    userSnap.child('account/arithmecoin').ref.set(totalCoins)
+                  })
+                
+                checkForEndOfRace(finalPosition, data.raceId)
+                
+                return { success: true, finalPosition, coinsAwarded: cfg.positionWinnings[finalPosition] }
               })
             
-            checkForEndOfRace(finalPosition, data.raceId)
-            
-            return { success: true, finalPosition, coinsAwarded: cfg.positionWinnings[finalPosition] }
-          })
-        
-      }
-      
-      return { success: false }
+          }
+          
+          return { success: false }
+        })
       
     })
 }

@@ -95,7 +95,6 @@ export default {
       user: null,
       raceRef: null,
       serverTimeOffset: null,
-      waitTimeOut: null,
       config: {
         // This part should match server config
         batteryLifeSpan: 5,
@@ -181,22 +180,11 @@ export default {
       // Add user to waiting room
       const waitingRoomRef = fireDb().ref('waitingroom/' + this.user.uid)
       
-      this.startedWaitingAt = Date.now()
+      this.startTime = Date.now()
       waitingRoomRef.set({
         waiting: true
       }).catch(err => this.$disp_error('waitingroomset:' + err, this))
       waitingRoomRef.onDisconnect().remove()
-      
-      // Set timeout for bot fill
-      this.waitTimeout = setTimeout(() => {
-        this.$toast.open({
-          message: "Couldn't find any more players. Filling race with bots.",
-          duration: 2000,
-          queue: false
-        })
-        this.requestBotFill()
-          .catch(err => this.$disp_error('RequestBotFill: ' + err, this))
-      }, this.config.waitTime)
       
       // Update waiting room data
       const WRref = fireDb().ref('waitingroom')
@@ -212,7 +200,6 @@ export default {
       fireDb().ref('user/' + this.user.uid + '/assignedRace').on('value', (snap) => {
         if (snap.val() != null) {
           this.raceRef = fireDb().ref('race/' + snap.val())
-          clearTimeout(this.waitTimeout)
           WRref.off()
           this.initRace()
         }
@@ -233,6 +220,9 @@ export default {
           this.game.players[playerid] = {
             lane: player.lane,
             name: player.name,
+            isGuest: player.isGuest,
+            isBot: player.isBot,
+            progressPerSecond: player.progressPerSecond,
             robot: player.robot,
             batteries: {},
             numBatteries: 0,
@@ -334,7 +324,7 @@ export default {
       for (const player of Object.values(this.game.players)) {
         let progress = 0
         if (player.isBot) {
-          progress = (Date.now() - this.startTime) / 1000 * player.progressPerSecond
+          progress = (Date.now() - this.game.startTime) / 1000 * player.progressPerSecond
         } else if (!player.finished) {
           let numBatteries = 0
           for (const battery of Object.values(player.batteries)) {
@@ -346,21 +336,19 @@ export default {
               numBatteries += 1
             }
           }
-          player.progress = progress
           player.numBatteries = numBatteries
         }
+        player.progress = progress
       }
       
       // Find position for each player
       const playerPositionArray = Object.entries(this.game.players).sort((a, b) => {
         return b[1].progress - a[1].progress // Sort from greatest progress to least
       })
-      console.log(playerPositionArray)
       const playerPositions = {}
       for (const [position, playerEntry] of Object.entries(playerPositionArray)) {
         playerPositions[playerEntry[0]] = parseInt(position) + 1 // Top should be 1, not zero.
       }
-      console.log(playerPositions)
       
       // Set this user's number of batteries, increase by one for asthetic reasons
       this.game.numBatteries = this.game.players[this.user.uid].numBatteries + 1
@@ -419,7 +407,7 @@ export default {
           if (result.data.success) {
             this.$toast.open({
               message: `You finished the race ${this.$with_ordinal_suffix(result.data.finalPosition)} and earned ${result.data.coinsAwarded} Arithmecoins.`,
-              duration: 1000000,
+              duration: 5000,
               type: 'is-success'
             })
             this.game.players[this.user.uid].finished = true

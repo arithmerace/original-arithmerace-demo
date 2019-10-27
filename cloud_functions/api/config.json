@@ -13,14 +13,20 @@
     "Im_just_a_bot",
     "Mathew",
     "Pepper",
-    "GoBot"
+    "GoBot",
+    "CocoTheDog",
+    "LuluTheCat",
+    "GoodBot",
+    "LittleBot",
+    "EpicRacer5"
   ],
   "bot_robots": [
     "guest_bot",
     "base_series_1000_bot"
   ],
-  "botMinProgressPerSecond": 5,
-  "botMaxProgressPerSecond": 8,
+  "botMinProgressPerSecond": 0.5,
+  "botMaxProgressPerSecond": 5,
+  "botFillWaitTime": 10000,
   
   "account": {
     "initialCoins": 500
