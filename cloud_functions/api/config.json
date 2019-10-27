@@ -24,8 +24,8 @@
     "guest_bot",
     "base_series_1000_bot"
   ],
-  "botMinProgressPerSecond": 0.5,
-  "botMaxProgressPerSecond": 5,
+  "botMinProgressPerSecond": 0.2,
+  "botMaxProgressPerSecond": 2,
   "botFillWaitTime": 10000,
   
   "account": {

@@ -116,7 +116,7 @@ export default {
         waitingRoomUpdateInterval: null,
         waitingRoomText: null,
         waitingRoomTimeText: null,
-        secondsToWait: 20
+        secondsToWait: 15
       },
       game: {
         running: false,
@@ -181,7 +181,7 @@ export default {
       this.app.stage.addChild(this.waitingRoom.waitingRoomText)
       
       this.waitingRoom.waitingRoomTimeText = new PIXI.Text('Waiting...')
-      this.waitingRoom.waitingRoomTimeText.position.set(150, 350)
+      this.waitingRoom.waitingRoomTimeText.position.set(175, 350)
       this.app.stage.addChild(this.waitingRoom.waitingRoomTimeText)
       
       // Add user to waiting room
@@ -205,6 +205,9 @@ export default {
       // Waiting room update loop
       this.waitingRoom.waitingRoomUpdateInterval = setInterval(() => {
         this.waitingRoom.secondsToWait -= 1
+        if (this.waitingRoom.secondsToWait < 0) {
+          this.waitingRoom.secondsToWait = 0
+        }
         this.waitingRoom.waitingRoomTimeText.text = `Waiting for ${this.waitingRoom.secondsToWait} more seconds...`
       }, 1000)
       

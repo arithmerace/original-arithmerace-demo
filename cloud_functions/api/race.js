@@ -59,7 +59,7 @@ exports.convertWRtoGame = function(playerSnap, ctx) {
             finalPosition: null,
             lane,
             isBot: true,
-            progressPerSecond: cfg.botMinProgressPerSecond + Math.floor(Math.random() * (cfg.botMaxProgressPerSecond - cfg.botMinProgressPerSecond + 1))
+            progressPerSecond: cfg.botMinProgressPerSecond + (Math.random() * (cfg.botMaxProgressPerSecond - cfg.botMinProgressPerSecond + 1))
           })
         } else {
           admin.database().ref('user/' + player.key).once('value')
@@ -169,7 +169,7 @@ exports.submitFinish = function(data, ctx) {
           playersSnap.forEach((player) => {
             if (player.child('isBot').val() && !player.child('finished').val()) {
               // Use current race length to see if bot has finished
-              const currentRaceLength = Date.now() - player.child('startTime').val() / 1000
+              const currentRaceLength = (Date.now() - player.child('startTime').val()) / 1000
               if (currentRaceLength * player.child('progressPerSecond').val() >= 100) {
                 numBotFinishes ++
                 player.child('finished').ref.set(true)
@@ -195,7 +195,7 @@ exports.submitFinish = function(data, ctx) {
               .then((numFinishedSnap) => {
                 const finalPosition = numFinishedSnap.val() + 1 + numBotFinishes
                 playerSnap.child('finalPosition').ref.set(finalPosition)
-                numFinishedSnap.ref.set(finalPosition)
+                numPlayersFinishedRef.set(finalPosition)
                 
                 admin.database().ref('user/' + ctx.auth.uid).once('value')
                   .then((userSnap) => {
