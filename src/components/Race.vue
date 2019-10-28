@@ -185,11 +185,9 @@ export default {
       this.app.stage.addChild(this.waitingRoom.waitingRoomTimeText)
       
       // Add user to waiting room
-      const waitingRoomRef = fireDb().ref('waitingroom/' + this.user.uid)
+      const waitingRoomRef = fireDb().ref('waitingroom/' + this.user.uid + '/waiting')
       
-      waitingRoomRef.set({
-        waiting: true
-      }).catch(err => this.$disp_error('waitingroomset:' + err, this))
+      waitingRoomRef.set(true).catch(err => this.$disp_error('waitingroomset:' + err, this))
       waitingRoomRef.onDisconnect().remove()
       
       // Update waiting room data

@@ -47,23 +47,24 @@ exports.convertWRtoGame = function(playerSnap, ctx) {
       // Create new game ref
       const raceRef = admin.database().ref('race').push()
       
-      let lane = 1
+      let lane = 0
       wrsnap.forEach((player) => {
         // For each player in waiting room, add player data to race then remove player from waiting room
-        if (player.child('isBot').val()) {
-          raceRef.child('player').push({
-            name: cfg.bot_names[Math.floor(Math.random()*cfg.bot_names.length)],
-            robot: cfg.bot_robots[Math.floor(Math.random()*cfg.bot_robots.length)],
-            batteries: {},
-            finished: false,
-            finalPosition: null,
-            lane,
-            isBot: true,
-            progressPerSecond: cfg.botMinProgressPerSecond + (Math.random() * (cfg.botMaxProgressPerSecond - cfg.botMinProgressPerSecond + 1))
-          })
-        } else {
-          admin.database().ref('user/' + player.key).once('value')
-            .then((userSnap) => {
+        admin.database().ref('user/' + player.key).once('value')
+          .then((userSnap) => {
+            lane ++
+            if (player.child('isBot').val()) {
+              raceRef.child('player').push({
+                name: cfg.bot_names[Math.floor(Math.random()*cfg.bot_names.length)],
+                robot: cfg.bot_robots[Math.floor(Math.random()*cfg.bot_robots.length)],
+                batteries: {},
+                finished: false,
+                finalPosition: null,
+                lane,
+                isBot: true,
+                progressPerSecond: cfg.botMinProgressPerSecond + (Math.random() * (cfg.botMaxProgressPerSecond - cfg.botMinProgressPerSecond + 1))
+              })
+            } else {
               raceRef.child('player/' + player.key).set({
                 name: (userSnap.val()) ? userSnap.val().username : 'Guest',
                 isGuest: (!userSnap.val()),
@@ -73,17 +74,14 @@ exports.convertWRtoGame = function(playerSnap, ctx) {
                 finalPosition: null,
                 startTime: null,
                 currentProblem: 0,
-                lane: lane - 1 // TODO Fix this - it shouldn't need the -1
+                lane
               })
           
             
               userSnap.child('assignedRace').ref.set(raceRef.key)
-            })
-        }
-        
-        player.ref.remove()
-            
-        lane ++
+            }
+            player.ref.remove()
+        })
       })
       // Generate math problems
       const problems = [generateNewProblem()]
@@ -105,7 +103,7 @@ exports.convertWRtoGame = function(playerSnap, ctx) {
       setTimeout(() => {
         playerSnap.ref.parent.once('value')
           .then((wrsnap) => {
-            if (playerSnap.key in wrsnap.val()) {
+            if (wrsnap.val() && playerSnap.key in wrsnap.val()) {
               // Player still in waiting room, add bots
               botFill()
             }
