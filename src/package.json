@@ -19,7 +19,7 @@
     "express": "^4.16.4",
     "firebase": "^6.3.0",
     "nuxt": "^2.0.0",
-    "nuxt-buefy": "^0.3.2",
+    "nuxt-buefy": "^0.3.17",
     "pixi.js": "^5.0.4",
     "pixi.js-legacy": "^5.0.4"
   },

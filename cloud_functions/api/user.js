@@ -43,3 +43,7 @@ exports.createNewUser = function(data, ctx) {
       return { success: true }
     })
 }
+
+// exports.submitUserSkills = function(data, ctx) {
+//   admin.database().ref('/user/' + ctx.auth.uid + '/career/skills').set(data.skills)
+// }

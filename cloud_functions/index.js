@@ -22,6 +22,7 @@ exports.exitRace = functions.https.onCall(raceApi.exitRace)
 
 /* User management */
 exports.createNewUser = functions.https.onCall(userApi.createNewUser)
+// exports.submitUserSkills = functions.https.onCall(userApi.submitUserSkills)
 
 /* Robot management */
 exports.purchaseRobot = functions.https.onCall(robotApi.purchaseRobot)

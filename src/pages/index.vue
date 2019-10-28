@@ -23,13 +23,30 @@
 </template>
 
 <script>
+import WelcomeModal from '~/components/WelcomeModal'
+
 export default {
   name: 'HomePage',
   data() {
     return {
     }
   },
+  mounted() {
+    // Check for new user argument
+    if (this.$route.query.welcome) {
+      this.$buefy.modal.open({
+        parent: this,
+        component: WelcomeModal,
+        hasModalCard: true,
+        canCancel: [],
+        scroll: 'clip',
+        trapFocus: true,
+        ariaModal: true
+      })
+    }
+  },
   methods: {
+    
   }
 }
 </script>

@@ -94,7 +94,7 @@ export default {
             fireAuth().signOut()
           } else if (result.data.success) {
             this.$toast.open('Your account was successfully created.')
-            window.location.replace('/')
+            window.location.replace('/?welcome=true')
           }
           this.submitDisabled = false
         }).catch((err) => {

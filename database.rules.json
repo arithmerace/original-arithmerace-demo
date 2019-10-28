@@ -27,7 +27,11 @@
           }
         },
         "profile": {},
-        "career": {}
+        "career": {
+          "skills": {
+            ".write": "auth.uid === $uid"
+          }
+        }
       }
     },
     "usernames": {
