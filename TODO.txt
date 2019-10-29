@@ -1,5 +1,4 @@
 Top priority:
-TODO Bot racers (AI)
 TODO add "queue: false" to all toasts
 
 Second priority:
@@ -21,4 +20,4 @@ TODO branding + custom style
 TODO custom auth
 TODO client-side auth management with state and pre-render stuff
 TODO Migrate to Vue 3? TypeScript?
-TODO Prevent Botfill spamming
+TODO Fix too many bots added issue

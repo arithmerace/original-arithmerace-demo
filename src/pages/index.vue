@@ -18,15 +18,31 @@
     <h2 class="is-size-4">
       More info
     </h2>
-    <p>Currently, you need 2 players to start a race so if a race isn't starting get a friend to play with you.</p>
+    <p></p>
   </section>
 </template>
 
 <script>
+import WelcomeModal from '~/components/WelcomeModal'
+
 export default {
   name: 'HomePage',
   data() {
     return {
+    }
+  },
+  mounted() {
+    // Check for new user argument
+    if (this.$route.query.welcome) {
+      this.$modal.open({
+        parent: this,
+        component: WelcomeModal,
+        hasModalCard: true,
+        canCancel: [],
+        scroll: 'clip',
+        trapFocus: true,
+        ariaModal: true
+      })
     }
   },
   methods: {
