@@ -5,7 +5,7 @@
         <strong>Arithmerace</strong>
         built by Benjamin A.
         <br><br>
-        This version was released for the Congressional App Challenge 2019. Keep an eye out for the official release!
+        This version was released for the Congressional App Challenge 2019.
       </div>
       <div class="column">
         Copyright &copy; <a href="https://scitronboy.com/" target="_blank">Benjamin Ashbaugh</a> 2019

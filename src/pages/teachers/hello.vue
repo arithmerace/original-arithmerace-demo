@@ -1,7 +1,7 @@
 <template>
   <section class="container has-text-centered">
     <h1 class="is-size-2">
-      Hey there teachers!
+      Hello, teachers!
     </h1>
     <h3 class="is-size-4">
       Keep an eye out! The teacher's dashboard is under construction.

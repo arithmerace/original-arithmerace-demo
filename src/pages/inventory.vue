@@ -55,6 +55,7 @@ export default {
           if (result.data.success) {
             this.$toast.open({
               message: 'Robot equipped.',
+              type: 'is-success',
               queue: false
             })
             // window.location.reload(true)

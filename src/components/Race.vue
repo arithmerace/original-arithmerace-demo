@@ -116,7 +116,7 @@ export default {
         waitingRoomUpdateInterval: null,
         waitingRoomText: null,
         waitingRoomTimeText: null,
-        secondsToWait: 15
+        secondsToWait: 25
       },
       game: {
         running: false,
