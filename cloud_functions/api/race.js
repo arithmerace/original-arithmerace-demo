@@ -97,7 +97,7 @@ exports.convertWRtoGame = function(playerSnap, ctx) {
           raceRef.child('firstProblem').set(problems[0].question)
         })
       }, cfg.raceStartDelay)
-    } else {
+    } else if (wrsnap.numChildren() < cfg.playersToStartRace) {
       // Start delay for bot filling, but make sure this player isn't a bot
       if (playerSnap.child('isBot').val()) return
       setTimeout(() => {
@@ -109,6 +109,9 @@ exports.convertWRtoGame = function(playerSnap, ctx) {
             }
           })
       }, cfg.botFillWaitTime)
+    } else {
+      if (playerSnap.child('isBot').val())
+      playerSnap.ref.remove()
     }
   })
 }
