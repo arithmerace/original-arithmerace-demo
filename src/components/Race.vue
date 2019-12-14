@@ -210,6 +210,7 @@ export default {
           this.raceRef = fireDb().ref('race/' + snap.val())
           WRref.off()
           clearInterval(this.waitingRoom.waitingRoomUpdateInterval)
+          snap.ref.remove()
           this.initRace()
         }
       })

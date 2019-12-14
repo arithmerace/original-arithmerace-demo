@@ -18,6 +18,10 @@
     "user": {
       "$uid": {
         ".read": true,
+        "assignedRace": {
+            ".write": "$uid === auth.uid",
+            ".validate": "newData.val() === null"
+        },
         "username": {},
         "robot": {},
         "account": {
