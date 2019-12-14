@@ -22,10 +22,10 @@
       </h2>
       <p><strong>Please read:</strong></p>
       <ol>
-        <li><p>There are several known issues with this site that I am working on fixing. If you see a gray error box pop up in the lower right, please ignore it - I am already aware of most of errors that occasionally occur.</p></li>
-        <li><p>When doing races with other people, an error may appear and one or more people may lose the ability to enter answers to the questions. This is because of the quota limit on function calls with the free plan on the server I'm hosting this with. I apologize for this - once I have a final product ready, I will rent a proper server to remove this limitation.</p></li>
+        <li><p>This is an open beta published for the Congressional App Challenge. For information regarding the official release, please visit <a href="https://arithmerace.com">arithmerace.com</a></p></li>
+        <li><p>To avoid any unexpected costs, I have the quotas for processing set very low on my servers. They should be high enough for normal use but if you run into an issue where a race stops working halfway through, this is probably why. </p></li>
+        <li><p>Feel free to contact me (link at bottom of page) with any issues or comments.</p></li>
         <li><p>Have fun and thanks for trying out my project!</p></li>
-        <!--<li><p>For further inquiries or feedback, please </p></li>-->
       </ol>
     </div>
   </section>
