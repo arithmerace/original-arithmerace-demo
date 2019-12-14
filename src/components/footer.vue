@@ -9,6 +9,9 @@
       </div>
       <div class="column">
         Copyright &copy; <a href="https://scitronboy.com/" target="_blank">Benjamin Ashbaugh</a> 2019
+        <br>
+        <br>
+        <a href="https://benjamin109374.typeform.com/to/ReEYi8" target="_blank">Contact Benjamin</a>
       </div>
       <div class="column">
         Disclaimer: By using this website, you acknowledge that you understand that this is a beta preview of the site and you consent to cookie use and the collection of usage information for development purposes. Use at your own risk.

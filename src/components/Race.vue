@@ -145,12 +145,7 @@ export default {
         this.user = user
         this.joinWaitingRoom()
       } else {
-        fireAuth().signInAnonymously()
-          .then((user) => {
-            this.user = user
-            this.joinWaitingRoom()
-          })
-          .catch(err => this.$disp_error('signInAnon: ' + err, this))
+        this.$router.push('sign-up')
       }
     })
   },
@@ -159,7 +154,7 @@ export default {
     this.submitExitRace({ raceId })
     
     // Destroy pixi application
-    this.app.destroy(false, true)
+    if (this.app) this.app.destroy(false, true)
   },
   methods: {
     submitSolution: fireFuncs().httpsCallable('submitProblemSolution'),

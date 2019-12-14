@@ -3,7 +3,7 @@
   "batteryProgressPerSecond": 1,
 
   "playersToStartRace": 5,
-  "raceStartDelay": 10000,
+  "raceStartDelay": 3000,
   "numProblemsPerRace": 12,
   "completionProgressThreshold": 99,
   "bot_names": [

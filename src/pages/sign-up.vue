@@ -4,6 +4,7 @@
       <h1 class="is-size-3">
         Sign Up
       </h1>
+      <p>Before racing, please create an account.</p>
       <br>
       <form @submit.prevent>
         <b-field label="Username">

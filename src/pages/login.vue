@@ -92,7 +92,29 @@ export default {
       })
     },
     resetPassword() {
-      // TODO reset password
+      this.$dialog.prompt({
+        title: 'Reset Password',
+        message: 'Enter your email and we will send you a password reset link if we find an account associated with your email',
+        inputAttrs: {
+          placeholder: 'youremail@example.com',
+          type: 'email'
+        },
+        trapFocus: true,
+        confirmText: 'Send reset link',
+        onConfirm: (email) => {
+          fireAuth().sendPasswordResetEmail(email, { url: 'https://arithmerace.web.app/login' })
+            .then(() => {
+              this.$toast.open({
+                type: 'is-success',
+                message: 'Password reset email sent',
+                queue: false,
+                duration: 7000
+              })
+            })
+            // .catch((error) => {
+            // })
+        }
+      })
     }
   }
 }

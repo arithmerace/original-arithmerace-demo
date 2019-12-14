@@ -7,12 +7,9 @@
       <em>A multiplayer competitive online math racing game.</em>
     </h3>
     <br>
-    <p>Arithmerace is a multiplayer online competitive math robot-racing game developed by a high schooler in Colorado.</p>
-    <p v-if="!user">
-      This is the demo.
-      <n-link to="/race">
-        click here try it out as a guest!
-      </n-link>
+    <p>Arithmerace is a multiplayer online competitive math robot-racing game developed by a high schooler in Colorado.</p><br>
+    <p v-if="!user || user == null">
+      This is an open beta published for the Congressional App Challenge. For information regarding the official release, please visit <a href="https://arithmerace.com">arithmerace.com</a>. If you would like to try it out, please <n-link to="/sign-up">sign up</n-link> (guest racing has been temporarily disabled).
     </p>
     <div v-else>
       <br>
