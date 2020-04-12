@@ -1,0 +1,14 @@
+{
+  "development": {
+    "config_id": "development"
+  },
+  "testing": {
+    "config_id": "testing"
+  },
+  "staging": {
+    "config_id": "staging"
+  },
+  "production": {
+    "config_id": "production"
+  }
+}

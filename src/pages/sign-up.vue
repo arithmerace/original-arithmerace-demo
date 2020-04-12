@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { fireAuth, fireFuncs } from '~/plugins/firebase'
+// import axios from 'axios'
 
 export default {
   name: 'SignUp',
@@ -63,7 +63,6 @@ export default {
     }
   },
   methods: {
-    createUserFunc: fireFuncs().httpsCallable('createNewUser'),
     signup() {
       if (!this.form.agree) {
         this.$toast.open({
@@ -75,54 +74,7 @@ export default {
       }
       
       this.submitDisabled = true
-      fireAuth().createUserWithEmailAndPassword(this.form.email, this.form.password).then((credential) => {
-        this.createUserFunc({
-          username: this.form.username
-        }).then((result) => {
-          if (result.data.error === 'username-taken') {
-            this.$toast.open({
-              duration: 6000,
-              message: 'That username is already taken',
-              queue: false
-            })
-            fireAuth().signOut()
-          } else if (result.data.error === 'username-invalid') {
-            this.$toast.open({
-              duration: 6000,
-              message: 'That username is invalid. It must be all-lowercase, numbers and letters only, 4-18 characters long.',
-              queue: false
-            })
-            fireAuth().signOut()
-          } else if (result.data.success) {
-            this.$toast.open('Your account was successfully created.')
-            window.location.replace('/?welcome=true')
-          }
-          this.submitDisabled = false
-        }).catch((err) => {
-          this.$disp_error('createUserFunc: ' + err, this)
-          this.submitDisabled = false
-        })
-      }).catch((err) => {
-        if (err.code === 'auth/weak-password') {
-          this.$snackbar.open({
-            duration: 30000,
-            message: 'Sorry, that password is too weak. It must be longer than 6 characters.'
-          })
-          this.form.password = ''
-        } else if (err.code === 'auth/invalid-email') {
-          this.$snackbar.open({
-            duration: 30000,
-            message: 'Please enter a valid email.'
-          })
-          this.form.email = ''
-        } else if (err.code === 'auth/email-already-in-use') {
-          this.$snackbar.open({
-            duration: 30000,
-            message: 'An account was already created with that email. Please visit the FAQ for more info.'
-          })
-        } else this.$disp_error('signUpemailandpassword: ' + err, this)
-        this.submitDisabled = false
-      })
+      // axios.post('/api/createNewUser')
     }
   }
 }
