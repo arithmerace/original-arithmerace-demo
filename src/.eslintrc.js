@@ -15,6 +15,9 @@ module.exports = {
   rules: {
     'no-console': 'off',
     'no-trailing-spaces': 'off',
-    'nuxt/no-cjs-in-config': 'off'
+    'nuxt/no-cjs-in-config': 'off',
+    'indent': ['error', 2, {
+      'MemberExpression': 'off'
+    }]
   }
 }

@@ -8,7 +8,7 @@ const consola = require('consola')
 const { Nuxt, Builder } = require('nuxt')
 const conf = require('../config/config')
 const apiRoutes = require('../api/routes')
-const socketManager = require('../sockets/manager')
+const socketManager = require('../api/sockets')
 const User = require('../api/models/user')
 
 const app = express()

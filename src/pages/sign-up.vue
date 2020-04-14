@@ -17,8 +17,8 @@
             placeholder="Pick a username"
           />
         </b-field>
-        <b-field label="Email">
-          <b-input v-model="form.email" required type="email" placeholder="Your email address" />
+        <b-field label="Email (optional)">
+          <b-input v-model="form.email" type="email" placeholder="Your email address" />
         </b-field>
         <b-field label="Password">
           <b-input v-model="form.password" required type="password" minlength="6" placeholder="Choose a password" />
@@ -47,7 +47,7 @@
 </template>
 
 <script>
-// import axios from 'axios'
+import axios from 'axios'
 
 export default {
   name: 'SignUp',
@@ -74,7 +74,13 @@ export default {
       }
       
       this.submitDisabled = true
-      // axios.post('/api/createNewUser')
+      axios.post('/api/createNewUser', {
+        username: this.form.username,
+        password: this.form.password
+      })
+      .then((response) => {
+
+      })
     }
   }
 }
