@@ -102,7 +102,7 @@ export default {
         trapFocus: true,
         confirmText: 'Send reset link',
         onConfirm: (email) => {
-          fireAuth().sendPasswordResetEmail(email, { url: 'https://arithmerace.web.app/login' })
+          fireAuth().sendPasswordResetEmail(email, { url: 'https://alpha.arithmerace.com/login' })
             .then(() => {
               this.$toast.open({
                 type: 'is-success',
