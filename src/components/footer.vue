@@ -6,15 +6,17 @@
         built by Benjamin A.
         <br><br>
         This version was released for the Congressional App Challenge 2019.
+        <br>
+        <a href="https://github.com/scitronboy/original-arithmerace-demo">Open source on GitHub</a>
       </div>
       <div class="column">
-        Copyright &copy; <a href="https://scitronboy.com/" target="_blank">Benjamin Ashbaugh</a> 2019
+        Copyright &copy; <a href="https://benjaminashbaugh.me/" target="_blank">Benjamin Ashbaugh</a> 2019
         <br>
         <br>
-        <a href="https://benjamin109374.typeform.com/to/ReEYi8" target="_blank">Contact Benjamin</a>
+        <a href="https://benjaminashbaugh.me/#contact" target="_blank">Contact Benjamin</a>
       </div>
       <div class="column">
-        Disclaimer: By using this website, you acknowledge that you understand that this is a beta preview of the site and you consent to cookie use and the collection of usage information for development purposes. Use at your own risk.
+        Disclaimer: This site is only for demonstration purposes, and is not actively maintained. Use at your own risk.
       </div>
     </div>
   </footer>

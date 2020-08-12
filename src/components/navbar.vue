@@ -100,6 +100,7 @@ export default {
   mounted() {
     fireAuth().onAuthStateChanged((user) => {
       this.user = user
+      if (!user) return
       fireDb().ref('/user/' + user.uid + '/username').once('value', (snap) => {
         this.username = snap.val()
       }).catch(err => this.disp_error('navbarGetUName: ' + err, this))
