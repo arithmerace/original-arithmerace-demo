@@ -7,7 +7,7 @@
         <br><br>
         This version was released for the Congressional App Challenge 2019.
         <br>
-        <a href="https://github.com/scitronboy/original-arithmerace-demo">Open source on GitHub</a>
+        <a href="https://github.com/arithmerace/original-arithmerace-demo">Open source on GitHub</a>
       </div>
       <div class="column">
         Copyright &copy; <a href="https://benjaminashbaugh.me/" target="_blank">Benjamin Ashbaugh</a> 2019
