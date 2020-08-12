@@ -1,8 +1,11 @@
 # Arithmerace
 
-Here are some docs to help anyone understand how it works.
+This is the original Arithmerace prototype (created for the Congressional App Challenge 2020). The latest version can be found at [arithmerace.com](https://arithmerace.com/)
 
-## How to create a new robot
+
+## Random stuff
+
+### How to create a new robot
 1. Design 50x80 pixel robot in Piskel
 2. (Names EVERYWHERE must be the same)
 3. Save robot, export as pixi.js movie export
