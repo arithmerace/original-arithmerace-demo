@@ -5,3 +5,4 @@ functions/dist/
 functions/nuxt.config.js
 public
 firebase-debug.log
+.idea
