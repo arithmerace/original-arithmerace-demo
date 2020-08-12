@@ -4,7 +4,7 @@ This is the [original Arithmerace prototype](https://alpha.arithmerace.com/), cr
 
 This project provides an example of a simple online multiplayer game that uses Firebase functions, realtime database, hosting, and authentication. The front end uses Vue, Nuxt.js, Buefy, and Pixi.js for the game. 
 
-I realized that in order to create the best user experience for Arithmerace, I needed to recreate Arithmerace from scratch using our own implementation of Node.js, websockets, and a database such as MongoDB, as well as custom CSS and a better game on the frontend. That production version will be published at [arithmerace.com](https://arithmerace.com/). But I decided to open-source my first prototype here, just in case it's useful for anyone :smile:. And you can find it live at [arithmerace.web.app](https://alpha.arithmerace.com/)
+I realized that in order to create the best user experience for Arithmerace, I needed to recreate Arithmerace from scratch using our own implementation of Node.js, websockets, and a database such as MongoDB, as well as custom CSS and a better game on the frontend. That production version will be published at [arithmerace.com](https://arithmerace.com/). But I decided to open-source my first prototype here, just in case it's useful for anyone :smile:. And you can find it live at [alpha.arithmerace.com](https://alpha.arithmerace.com/)
 
 ## Random stuff
 
