@@ -16,7 +16,7 @@
   "dependencies": {
     "@pixi/canvas-renderer": "^5.0.4",
     "cross-env": "^5.2.0",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "firebase": "^6.3.0",
     "nuxt": "^2.10.2",
     "nuxt-buefy": "^0.3.2",
